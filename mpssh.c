@@ -91,6 +91,11 @@ reap_child()
 			pslot_printbuf(pslot_ptr, OUT);
 		while (pslot_readbuf(pslot_ptr, ERR))
 			pslot_printbuf(pslot_ptr, ERR);
+		/* 
+		 * make sure that we print some output in verbose mode
+		 * even if there is no data in the buffer
+		 */
+		pslot_printbuf(pslot_ptr, OUT);
 		pslot_ptr = pslot_del(pslot_ptr);
 		children--; /* decrement this last, its used in pslot_bypid */
 	}
