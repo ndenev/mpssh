@@ -118,9 +118,6 @@ child()
 			 strerror(errno));
 	snprintf(login, sizeof(login), "%s@%s",
 		user, pslot_ptr->hst->name);
-#ifndef linux  /* linux does not have setproctitle() */
-	setproctitle("%s %s", login, cmd);
-#endif
 	execl(SSHPATH, "ssh", SSHOPTS, hkey_check?HKCHK_Y:HKCHK_N,
 			login, cmd, NULL);
 	fprintf(stderr, "exec of %s %s \"%s\" failed\n",
