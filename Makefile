@@ -3,7 +3,7 @@ LD = gcc
 CFLAGS = -Wall
 LDFLAGS =
 RM = /bin/rm -f
-SSHPATH = /usr/bin/ssh
+SSHPATH = `which ssh`
 
 LIBS =
 
