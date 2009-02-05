@@ -1,0 +1,70 @@
+.Dd 05/02/09
+.Dt mpssh
+.Sh NAME
+.Nm mpssh
+.Sh SYNOPSIS
+.Nm
+.Op Fl besv
+.Op Fl o Ar directory 
+.Op Fl u Ar username
+.Op Fl f Ar hosts
+.Op Fl p Ar procs
+.Ar <command> 
+.Sh DESCRIPTION
+
+The
+.Nm
+utility uses the ssh binary to connect to a number of hosts (specified in the hosts file) and execute <command> on each of them.
+
+A list of flags and arguments with description: 
+.Bl -tag -width -indent
+.It Fl b
+This flag enables "blind" mode, in which no output from the remote hosts is made to the screen. This mode can only be enabled if the
+.Fl o
+flag is used, so the output is saved to disk. 
+.It Fl e
+With this flag
+.Nm
+prints the return codes of the remotely executed commands.
+.It Fl s
+This flag disables the ssh(1)'s strict host key checking. For more info see the ssh(1) manual page.
+.It Fl v
+This flag makes the output more verbose.
+.It Fl o Ar directory 
+This option creates files in "directory" named after each host name listed in the "hosts" file and saves the output received from the remotely executed command there.
+.It Fl u Ar username
+This forces ssh to use the supplied username instead of the username of the current user.
+.It Fl f Ar hosts
+A file containing a list of hosts to whom we are going to connect. One host per line. Lines starting with # are skipped.
+.It Fl p Ar procs
+Spawn up-to "procs" number of ssh processes in parallel.
+.El
+.Pp
+.\" .Sh ENVIRONMENT      \" May not be needed
+.\" .Bl -tag -width "ENV_VAR_1" -indent \" ENV_VAR_1 is width of the string ENV_VAR_1
+.\" .It Ev ENV_VAR_1
+.\" Description of ENV_VAR_1
+.\" .It Ev ENV_VAR_2
+.\" Description of ENV_VAR_2
+.\" .El                      
+.Sh FILES
+.It Pa /usr/local/bin/mpssh 
+/usr/local/bin/mpssh The
+.Nm
+binary
+.El
+.\" .Sh DIAGNOSTICS       \" May not be needed
+.\" .Bl -diag
+.\" .It Diagnostic Tag
+.\" Diagnostic informtion here.
+.\" .It Diagnostic Tag
+.\" Diagnostic informtion here.
+.\" .El
+.Sh SEE ALSO 
+.\" List links in ascending order by section, alphabetically within a section.
+.\" Please do not reference files that do not exist without filing a bug report
+.Xr ssh 1 , 
+.Xr ssh-keygen 1 ,
+.Xr ssh-agent 1
+.\" .Sh BUGS              \" Document known, unremedied bugs 
+.\" .Sh HISTORY           \" Document history if command behaves in a unique manner
