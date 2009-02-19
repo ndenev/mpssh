@@ -69,6 +69,7 @@ host_readlist(char *fname)
 	host	*head;
 	host	*hst;
 	char	 line[MAXNAME];
+	int	linelen;
 
 	if (!fname)
 		return(NULL);
@@ -82,8 +83,9 @@ host_readlist(char *fname)
 			continue;
 		hst = host_add(hst, line);
 		/* keep track of the longest line */
-		if (strlen(line) > host_len_max)
-			host_len_max = strlen(line); 
+		linelen = strlen(line);
+		if (linelen > host_len_max)
+			host_len_max = linelen; 
 		hostcount++;
 	}
 	fclose(hstlist);
