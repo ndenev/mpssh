@@ -198,7 +198,7 @@ pslot_printbuf(procslt *pslot, int outfd)
 		} else {
 			percent = (float)done/(float)hostcount*100;
 		}
-		sprintf(progress, "[%5.1f%%]", percent);
+		snprintf(progress, sizeof(progress), "[%5.1f%%]", percent);
 	} else {
 	       	progress[0] = '\0';
 	}
