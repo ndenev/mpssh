@@ -277,7 +277,12 @@ main(int argc, char *argv[])
 			/* output to file mode */
 			if (outdir) {
 				umask(022);
-				i = strlen(outdir)+strlen(pslot_ptr->hst->name)+strlen("/.out\0");
+				/*
+				 * alloc enough space for the string consisting of a directoryname, slash, filename,
+				 * a dot and a three letter file extension (out/err) and of course the terminating null
+				 */
+				i = strlen(outdir) + strlen(pslot_ptr->hst->name);
+				i += 6;
 				pslot_ptr->outfn = malloc(i);
 				if (!pslot_ptr->outfn) {
 					fprintf(stderr, "unable to malloc memory for filename\n");
