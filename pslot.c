@@ -49,6 +49,8 @@ pslot_new(int pid, host *hst)
 	pslot_tmp->used = 0;
 	pipe(pslot_tmp->io.out);
 	pipe(pslot_tmp->io.err);
+	fcntl(pslot_tmp->io.out[0], F_SETFL, O_NONBLOCK);
+	fcntl(pslot_tmp->io.err[0], F_SETFL, O_NONBLOCK);
 	return(pslot_tmp);
 }
 
