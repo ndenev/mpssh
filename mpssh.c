@@ -244,7 +244,7 @@ main(int argc, char *argv[])
 		usage("problem with file");
 
 	printf( "MPSSH - Mass Parallel Ssh %s\n"
-		"(c)2005-2008 N.Denev <ndenev@gmail.com>\n"
+		"(c)2005-2009 N.Denev <ndenev@gmail.com>\n"
 		"%s\n\n"
 		"  [*] read (%d) hosts from the list\n"
 		"  [*] executing \"%s\" as user \"%s\" on each\n",
