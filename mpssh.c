@@ -41,7 +41,7 @@
 #include "pslot.h"
 
 const char Ident[] = "$Id: mpssh.c 15 2009-05-12 09:28:56Z nike_d $";
-const char Rev[] = "$Rev$";
+const char Ver[] = "HEAD";
 
 /* global vars */
 procslt	*pslot_ptr   = NULL;
@@ -248,7 +248,7 @@ main(int argc, char *argv[])
 		"%s\n\n"
 		"  [*] read (%d) hosts from the list\n"
 		"  [*] executing \"%s\" as user \"%s\" on each\n",
-		Rev, Ident, hostcount, cmd, user);
+		Ver, Ident, hostcount, cmd, user);
 	if (!hkey_check)
 		printf("  [*] strict host key check disabled\n");
 	if (blind)
