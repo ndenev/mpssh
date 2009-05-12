@@ -40,8 +40,8 @@
 #include "host.h"
 #include "pslot.h"
 
-const char Ident[] = "$Id: mpssh.c 4967 2008-06-04 08:11:10Z ndenev $";
-const char Rev[] = "$Rev: 4967 $";
+const char Ident[] = "$Id: mpssh.c 15 2009-05-12 09:28:56Z nike_d $";
+const char Ver[] = "1.2";
 
 /* global vars */
 procslt	*pslot_ptr   = NULL;
@@ -126,6 +126,17 @@ child()
 }
 
 /*
+ * print program version and exit
+ */
+void
+show_ver()
+{
+	printf("mpssh-%s\n", Ver);
+	printf("%s\n", Ident);
+	exit(0);
+}
+
+/*
  * routine displaing the usage, and various error messages
  * supplied from the main() routine.
  */
@@ -134,15 +145,20 @@ usage(char *msg)
 {
 	printf( "\n  Usage: mpssh [-u username] [-p numprocs] [-f hostlist]\n"
 		"               [-e] [-b] [-o /some/dir] [-s] [-v] <command>\n\n"
-		"    -u username to login as\n"
-		"    -p number of parallel ssh sessions\n"
-		"    -f file to read the host list from\n"
-		"    -e print the return code on exit\n"
-		"    -b enable blind mode\n"
-		"    -o output directory\n"
-		"    -s disable ssh strict host key check\n"
-		"    -v print progress\n\n"
-		"   *** %s\n\n", msg?msg:"");
+		"  -h, --help         this screen\n"
+		"  -u, --user=USER    login as this username\n"
+		"  -p, --procs=NPROC  number of parallel ssh processes\n"
+		"  -f, --file=FILE    host list file name\n"
+		"  -e, --retcode      print the return code on exit\n"
+		"  -b, --blind        enable blind mode (do not show remote output)\n"
+		"  -o, --outdir=DIR   directory to save output files\n"
+		"  -s, --nokeychk     disable ssh strict host key check\n"
+		"  -v, --verbose      be more verbose and show progress\n"
+		"  -V, --version      show program version\n"
+		"\n");
+	if (msg)
+		printf("   *** %s\n\n", msg);
+
 	exit(0);
 }
 
@@ -151,7 +167,21 @@ parse_opts(int *argc, char ***argv)
 {
 	int opt;
 
-	while ((opt = getopt(*argc, *argv, "bef:o:p:u:sv")) != -1) {
+	static struct option longopts[] = {
+		{ "blind",	no_argument,		NULL,		'b' },
+		{ "retcode",	no_argument,		NULL,		'e' },
+		{ "file",	required_argument,	NULL,		'f' },
+		{ "help",	no_argument,		NULL,		'h' },
+		{ "outdir",	required_argument,	NULL,		'o' },
+		{ "procs",	required_argument,	NULL,		'p' },
+		{ "user",	required_argument,	NULL,		'u' },
+		{ "nokeychk",	no_argument,		NULL,		's' },
+		{ "verbose",	no_argument,		NULL,		'v' },
+		{ "version",	no_argument,		NULL,		'V' },	
+		{ NULL,		0,			NULL,		0},
+	};
+
+	while ((opt = getopt_long(*argc, *argv, "bef:ho:p:u:svV", longopts, NULL)) != -1) {
 		switch (opt) {
 			case 'b':
 				blind = 1;
@@ -167,6 +197,9 @@ parse_opts(int *argc, char ***argv)
 				if (fname)
 					usage("one filename allowed");
 				fname = optarg;
+				break;
+			case 'h':
+				usage(NULL);
 				break;
 			case 'o':
 				if (outdir)
@@ -190,6 +223,9 @@ parse_opts(int *argc, char ***argv)
 				break;
 			case 'v':
 				verbose = 1;
+				break;
+			case 'V':
+				show_ver();
 				break;
 			case '?':
 				usage("unrecognized option");
@@ -243,12 +279,13 @@ main(int argc, char *argv[])
 	if (!(hst = host_readlist(fname?fname:HSTLIST)))
 		usage("problem with file");
 
-	printf( "MPSSH - Mass Parallel Ssh %s\n"
-		"(c)2005-2008 N.Denev <ndenev@gmail.com>\n"
+	printf( "MPSSH - Mass Parallel Ssh Ver.%s\n"
+		"(c)2005-2009 N.Denev <ndenev@gmail.com>\n"
 		"%s\n\n"
 		"  [*] read (%d) hosts from the list\n"
 		"  [*] executing \"%s\" as user \"%s\" on each\n",
-		Rev, Ident, hostcount, cmd, user);
+		Ver, Ident, hostcount, cmd, user);
+
 	if (!hkey_check)
 		printf("  [*] strict host key check disabled\n");
 	if (blind)
