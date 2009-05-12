@@ -40,7 +40,7 @@
 #include "host.h"
 #include "pslot.h"
 
-const char Ident[] = "$Id: mpssh.c 4967 2008-06-04 08:11:10Z ndenev $";
+const char Ident[] = "$Id$";
 const char Rev[] = "$Rev: 4967 $";
 
 /* global vars */
