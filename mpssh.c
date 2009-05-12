@@ -40,7 +40,7 @@
 #include "host.h"
 #include "pslot.h"
 
-const char Ident[] = "$Id: mpssh.c 15 2009-05-12 09:28:56Z nike_d $";
+const char Ident[] = "$Id$";
 const char Ver[] = "1.2";
 
 /* global vars */
@@ -132,7 +132,6 @@ void
 show_ver()
 {
 	printf("mpssh-%s\n", Ver);
-	printf("%s\n", Ident);
 	exit(0);
 }
 
@@ -281,10 +280,10 @@ main(int argc, char *argv[])
 
 	printf( "MPSSH - Mass Parallel Ssh Ver.%s\n"
 		"(c)2005-2009 N.Denev <ndenev@gmail.com>\n"
-		"%s\n\n"
+		"\n"
 		"  [*] read (%d) hosts from the list\n"
 		"  [*] executing \"%s\" as user \"%s\" on each\n",
-		Ver, Ident, hostcount, cmd, user);
+		Ver, hostcount, cmd, user);
 
 	if (!hkey_check)
 		printf("  [*] strict host key check disabled\n");
