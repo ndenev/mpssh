@@ -243,12 +243,13 @@ main(int argc, char *argv[])
 	if (!(hst = host_readlist(fname?fname:HSTLIST)))
 		usage("problem with file");
 
-	printf( "MPSSH - Mass Parallel Ssh %s\n"
+	printf( "MPSSH - Mass Parallel Ssh Ver.%s\n"
 		"(c)2005-2009 N.Denev <ndenev@gmail.com>\n"
 		"%s\n\n"
 		"  [*] read (%d) hosts from the list\n"
 		"  [*] executing \"%s\" as user \"%s\" on each\n",
 		Ver, Ident, hostcount, cmd, user);
+
 	if (!hkey_check)
 		printf("  [*] strict host key check disabled\n");
 	if (blind)
