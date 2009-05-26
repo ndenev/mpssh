@@ -108,6 +108,9 @@ child()
 	char	login[LOGLEN];
 
 	pslot_ptr->pid = 0;
+	/* close stdin of the child, so it won't accept input */
+	close(0);
+	/* close the parent end of the pipes */
 	close(pslot_ptr->io.out[0]);
 	close(pslot_ptr->io.err[0]);
 	if (dup2(pslot_ptr->io.out[1], 1) == -1)
@@ -345,6 +348,7 @@ main(int argc, char *argv[])
 			default:
 				/* parent */
 				pslot_ptr->pid = pid;
+				/* close the child's end of the pipes */
 				close(pslot_ptr->io.out[1]);
 				close(pslot_ptr->io.err[1]);
 				children++;
