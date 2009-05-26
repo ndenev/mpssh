@@ -33,7 +33,7 @@
  * linked list containing the hosts read from the file.
  * it is used internally by host_add().
  */
-host*
+static host*
 host_new(char *name)
 {
 	host *hst;
@@ -50,7 +50,7 @@ host_new(char *name)
  * routine for adding elements in the existing hostlist
  * linked list.
  */
-host*
+static host*
 host_add(host *hst, char *name)
 {
 	if (!hst) return(host_new(name));
