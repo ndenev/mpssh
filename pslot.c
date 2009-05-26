@@ -172,7 +172,6 @@ pslot_printbuf(procslt *pslot, int outfd)
 	char	*bufp;
 	FILE	*stream;
 	char	progress[9];
-	float	percent;
 	char	**stream_pfx;
 	char	*pfx_out[] = { "OUT:", "->", "\033[1;32m->\033[0;39m", NULL };
 	char	*pfx_err[] = { "ERR:", "=>", "\033[1;31m=>\033[0;39m", NULL };
@@ -194,13 +193,7 @@ pslot_printbuf(procslt *pslot, int outfd)
 	}
 
 	if (verbose) {
-		/* ugly hack to make sure that the last server show progress of 100% */
-		if ((done == hostcount-1) && (children == 1)) {
-			percent = 100.00;
-		} else {
-			percent = (float)done/(float)hostcount*100;
-		}
-		snprintf(progress, sizeof(progress), "[%5.1f%%]", percent);
+		snprintf(progress, sizeof(progress), "[%5.1f%%]", (float)done/(float)hostcount*100);
 	} else {
 	       	progress[0] = '\0';
 	}
