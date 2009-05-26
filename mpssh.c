@@ -63,8 +63,6 @@ sigset_t	sigmask;
 sigset_t	osigmask;
 
 /* function declarations */
-host	*host_new(char *);
-host	*host_add(host *, char *);
 host	*host_readlist(char *);
 procslt	*pslot_add(procslt *, int, host *);
 procslt	*pslot_del(procslt *);
