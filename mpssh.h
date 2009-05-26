@@ -50,7 +50,6 @@
 #define	HSTLIST "hostlist.txt"
 #define	MAXCMD  1024				/* max command len */
 #define	MAXUSER 30				/* max username len */
-#define	LOGLEN	( MAXUSER + MAXNAME + 2)	/* $usr@i$hst max len */
 #define	MAXCHLD 1024 				/* max child procs */
 #define	DEFCHLD	100				/* default child procs */
 #define	OUT	1
