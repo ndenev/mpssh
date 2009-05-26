@@ -323,7 +323,7 @@ main(int argc, char *argv[])
 				 */
 				i = strlen(outdir) + strlen(pslot_ptr->hst->name);
 				i += 6;
-				pslot_ptr->outfn = malloc(i);
+				pslot_ptr->outfn = calloc(1, i);
 				if (!pslot_ptr->outfn) {
 					fprintf(stderr, "unable to malloc memory for filename\n");
 					exit(1);
