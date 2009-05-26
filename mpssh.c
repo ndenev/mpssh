@@ -106,14 +106,18 @@ child()
 	char	login[LOGLEN];
 
 	pslot_ptr->pid = 0;
+
 	/* close stdin of the child, so it won't accept input */
 	close(0);
+
 	/* close the parent end of the pipes */
 	close(pslot_ptr->io.out[0]);
 	close(pslot_ptr->io.err[0]);
+
 	if (dup2(pslot_ptr->io.out[1], 1) == -1)
 		fprintf(stderr, "stdout dup fail %s\n",
 			 strerror(errno));
+
 	if (dup2(pslot_ptr->io.err[1], 2) == -1)
 		fprintf(stderr, "stderr dup fail %s\n",
 			 strerror(errno));
