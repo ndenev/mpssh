@@ -34,16 +34,39 @@
  * it is used internally by host_add().
  */
 static host*
-host_new(char *name)
+host_new(char *user, char *name, char *port)
 {
-	host *hst;
-	if (!(hst = malloc(sizeof(host)))) {
-		fprintf(stderr, "%s\n", strerror(errno));
-		exit(1);
+	static host *hst;
+
+	if (!(hst = calloc(1, sizeof(host)))) goto fail;
+
+	if (user) {
+		if (!(hst->user = calloc(1, strlen(user)+1))) goto fail;
+		strncpy(hst->user, user, strlen(user));
+	} else {
+		hst->user = NULL;
 	}
-	strncpy(hst->name, name, sizeof(hst->name));
+
+	if (name) {
+		if (!(hst->name = calloc(1, strlen(name)+1))) goto fail;
+		strncpy(hst->name, name, strlen(name));
+	} else {
+		hst->name = NULL;
+	}
+
+	if (port) {
+		if (!(hst->port = calloc(1, strlen(port)+1))) goto fail;
+		strncpy(hst->port, port, strlen(port));
+	} else {
+		hst->port = NULL;
+	}
+
 	hst->next = NULL;
+
 	return(hst);
+fail:
+	fprintf(stderr, "%s\n", strerror(errno));
+	return(NULL);
 }
 
 /*
@@ -51,10 +74,12 @@ host_new(char *name)
  * linked list.
  */
 static host*
-host_add(host *hst, char *name)
+host_add(host *hst, char *user, char *name, char *port)
 {
-	if (!hst) return(host_new(name));
-	hst->next = host_add(hst->next, name);
+	if (hst == NULL)
+		return(host_new(user, name, port));
+	
+	hst->next = host_add(hst->next, user, name, port);
 	return(hst->next);
 }
 
@@ -66,31 +91,78 @@ host*
 host_readlist(char *fname)
 {
 	FILE    *hstlist;
-	host	*head;
 	host	*hst;
-	char	 line[MAXNAME];
+	host	*hst_head;
+	char	line[MAXNAME*3];
+	int	i;
 	int	linelen;
+	char	*user;
+	char	*name;
+	char	*port;
 
-	if (!fname)
+	if (fname == NULL)
 		return(NULL);
+
 	hstlist = fopen(fname, "r");
-	if (!hstlist)
+
+	if (hstlist == NULL)
 		return(NULL);
-	head = host_new("");
-	hst = head;
+
+	hst_head = hst = host_add(NULL, NULL, NULL, NULL);
+
 	while (fgets(line, sizeof(line), hstlist)) {
-		if (sscanf(line, "%[A-Za-z0-9-.]", line) != 1)
+		if (sscanf(line, "%[A-Za-z0-9-.@:]", line) != 1)
 			continue;
-		hst = host_add(hst, line);
-		/* keep track of the longest line */
+
 		linelen = strlen(line);
-		if (linelen > host_len_max)
-			host_len_max = linelen; 
+
+		user = NULL;
+		name = line;
+		port = NULL;
+
+		for (i=0; i < linelen; i++) {
+			switch (line[i]) {
+				case '@':
+					if (port)
+						continue;
+					if (user)
+						continue;
+					line[i] = '\0';
+					user = line;
+					name = &line[i+1];
+					break;
+
+				case ':': 
+					if (port)
+						continue;
+					line[i] = '\0';
+					port = &line[i+1];
+					errno = 0;
+					(int)strtol(port, (char **)NULL, 10);
+					if (errno)
+						port = NULL;
+					break;
+
+				default:
+					break;
+			}
+		}
+
+		hst = host_add(hst, user, name, port);
+		printf("added %s@%s:%s\n", user, name, port);
+
+		if (hst == NULL)
+			return(NULL);
+
+		/* keep track of the longest line */
+		if (strlen(name) > host_len_max)
+			host_len_max = strlen(name); 
+
 		hostcount++;
 	}
 	fclose(hstlist);
-	hst = head->next;
-	free(head);
 	if (maxchld > hostcount) maxchld = hostcount;
+	hst = hst_head->next;
+	free(hst_head);	
 	return(hst);
 }

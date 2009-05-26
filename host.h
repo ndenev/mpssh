@@ -30,7 +30,9 @@
 /* host list structs */
 struct
 host {
-	char    name[MAXNAME];
+	char	*user;
+	char    *name;
+	char	*port;
 	struct  host  *next;
 };
 

@@ -103,7 +103,8 @@ reap_child()
 void
 child()
 {
-	char	login[LOGLEN];
+	int	len_u, len_p;
+	char	*user_arg, *port_arg;
 
 	pslot_ptr->pid = 0;
 
@@ -121,12 +122,26 @@ child()
 	if (dup2(pslot_ptr->io.err[1], 2) == -1)
 		fprintf(stderr, "stderr dup fail %s\n",
 			 strerror(errno));
-	snprintf(login, sizeof(login), "%s@%s",
-		user, pslot_ptr->hst->name);
+
+	len_u = strlen(pslot_ptr->hst->user?pslot_ptr->hst->user:user) + 3; // space for -l and \0
+	user_arg = calloc(1, len_u);
+	if (user_arg == NULL) {
+		exit(1);
+	}
+
+	len_p = strlen(pslot_ptr->hst->port?pslot_ptr->hst->port:"22") + 3; // space for -p and \0
+	port_arg = calloc(1, len_p);
+	if (port_arg == NULL) {
+		exit(1);
+	}
+
+	snprintf(user_arg, len_u, "-l%s", pslot_ptr->hst->user?pslot_ptr->hst->user:user);
+	snprintf(port_arg, len_p, "-p%s", pslot_ptr->hst->port?pslot_ptr->hst->port:"22");
+
 	execl(SSHPATH, "ssh", SSHOPTS, hkey_check?HKCHK_Y:HKCHK_N,
-			login, cmd, NULL);
-	fprintf(stderr, "exec of %s %s \"%s\" failed\n",
-		SSHPATH, login, cmd);
+			user_arg, port_arg, pslot_ptr->hst->name, cmd, NULL);
+	fprintf(stderr, "exec failed : %s %s %s %s %s %s %s\n", SSHPATH, SSHOPTS,
+			hkey_check?HKCHK_Y:HKCHK_N, user_arg, port_arg, pslot_ptr->hst->name, cmd);
 	exit(1);
 }
 
