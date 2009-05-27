@@ -44,8 +44,10 @@ pslot_new(int pid, host *hst)
 	}
 	pslot_tmp->pid = pid;
 	pslot_tmp->hst = hst;
-	pslot_tmp->outf = NULL;
-	pslot_tmp->outfn = NULL;
+	pslot_tmp->outf[0].name = NULL;
+	pslot_tmp->outf[0].fh	 = NULL;
+	pslot_tmp->outf[1].name = NULL;
+	pslot_tmp->outf[1].fh	 = NULL;
 	pslot_tmp->used = 0;
 	pipe(pslot_tmp->io.out);
 	pipe(pslot_tmp->io.err);
@@ -83,32 +85,50 @@ pslot_add(procslt *pslot, int pid, host *hst)
  * routine for deleting process slot from the ring list
  * it adjusts the links of the neighbor pslots and free()'s
  * the slot, closing it's piped descriptors
- * XXX: we do not delete the last process slot!
  */
 procslt*
 pslot_del(procslt *pslot)
 {
 	procslt *pslot_todel;
+	int	is_last = 0;
 	if (!pslot) return(NULL);
-	/* this is the last element */
-	if (pslot == pslot->next) {
-		close(pslot->io.out[0]);
-		close(pslot->io.err[0]);
-		free(pslot);
-		pslots++;
-		return(NULL);
-	}
+	
+	if (pslot == pslot->next)
+		is_last = 1;
+
+	/* these shouldn't do anything if we are the last element */
 	pslot_todel = pslot;
 	pslot->prev->next = pslot_todel->next;
 	pslot->next->prev = pslot_todel->prev;
 	pslot = pslot_todel->next;
 	close(pslot_todel->io.out[0]);
 	close(pslot_todel->io.err[0]);
-	if (pslot_todel->outf)
-		fclose(pslot_todel->outf);
-	if (pslot_todel->outfn)
-		free(pslot_todel->outfn);	
+
+	/*
+	 * close the stdout and stderr filehandles,
+	 * unlink the output file if we have not written anything to it,
+	 * and finally free the memory containing the filename
+	 */
+	if (pslot_todel->outf[0].fh) {
+		if (ftell(pslot_todel->outf[0].fh) == 0)
+			unlink(pslot_todel->outf[0].name);
+		fclose(pslot_todel->outf[0].fh);
+		free(pslot_todel->outf[0].name);
+	}
+	if (pslot_todel->outf[1].fh) {
+		if (ftell(pslot_todel->outf[1].fh) == 0)
+			unlink(pslot_todel->outf[1].name);
+		fclose(pslot_todel->outf[1].fh);
+		free(pslot_todel->outf[1].name);
+	}
+
 	free(pslot_todel);
+
+	if (is_last) {
+		pslots++;
+		return(NULL);
+	}
+
 	pslots--;
 	return(pslot);
 }
@@ -201,8 +221,8 @@ pslot_printbuf(procslt *pslot, int outfd)
 	if (strlen(bufp)) {
 		if (outdir) {
 			/* print to file */
-			fprintf(pslot->outf, "%s %s\n", stream_pfx[0], bufp);
-			fflush(pslot->outf);
+			fprintf(pslot->outf[outfd - 1].fh, "%s\n", bufp);
+			fflush(pslot->outf[outfd - 1].fh);
 			pslot->used++;
 		}
 		if (!blind) {

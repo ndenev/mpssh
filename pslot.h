@@ -35,6 +35,13 @@ stdio_pipe {
 	int     err[2];
 };
 
+/* stdout/stderr output filenames and filehandles */
+struct
+out_files {
+	char	*name;
+	FILE	*fh;
+};
+
 /* process slot structure */
 struct
 process_slot {
@@ -42,8 +49,7 @@ process_slot {
 	struct  host  *hst;
 	char    out_buf[LINEBUF];
 	char    err_buf[LINEBUF];
-	char	*outfn;
-	FILE	*outf;
+	struct	out_files outf[2];
 	int	used;
 	int	ret;
 	struct  stdio_pipe io;

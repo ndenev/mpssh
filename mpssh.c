@@ -336,20 +336,33 @@ main(int argc, char *argv[])
 			if (outdir) {
 				umask(022);
 				/*
-				 * alloc enough space for the string consisting of a directoryname, slash, filename,
-				 * a dot and a three letter file extension (out/err) and of course the terminating null
+				 * alloc enough space for the string consisting of a directoryname, slash, username, @ sign,
+				 * hostname, a dot and a three letter file extension (out/err) and the terminating null char
 				 */
-				i = strlen(outdir) + strlen(pslot_ptr->hst->name);
-				i += 6;
-				pslot_ptr->outfn = calloc(1, i);
-				if (!pslot_ptr->outfn) {
+				i = strlen(outdir) + strlen("/") + strlen(pslot_ptr->hst->user) + strlen("@");
+				i += strlen(pslot_ptr->hst->name) + strlen(".ext") + 1;
+				/* setup the stdout output file */
+				pslot_ptr->outf[0].name = calloc(1, i);
+				if (!pslot_ptr->outf[0].name) {
 					fprintf(stderr, "unable to malloc memory for filename\n");
 					exit(1);
 				}
-				sprintf(pslot_ptr->outfn, "%s/%s.out", outdir, pslot_ptr->hst->name);
-				pslot_ptr->outf = fopen(pslot_ptr->outfn, "w");
-				if (!pslot_ptr->outf) {
-					fprintf(stderr, "unable to open : %s\n", pslot_ptr->outfn);
+				sprintf(pslot_ptr->outf[0].name, "%s/%s@%s.out", outdir, pslot_ptr->hst->user, pslot_ptr->hst->name);
+				pslot_ptr->outf[0].fh = fopen(pslot_ptr->outf[0].name, "w");
+				if (!pslot_ptr->outf[0].fh) {
+					fprintf(stderr, "unable to open : %s\n", pslot_ptr->outf[0].name);
+					exit(1);
+				}
+				/* setup the stderr output file */
+				pslot_ptr->outf[1].name = calloc(1, i);
+				if (!pslot_ptr->outf[1].name) {
+					fprintf(stderr, "unable to malloc memory for filename\n");
+					exit(1);
+				}
+				sprintf(pslot_ptr->outf[1].name, "%s/%s@%s.err", outdir, pslot_ptr->hst->user, pslot_ptr->hst->name);
+				pslot_ptr->outf[1].fh = fopen(pslot_ptr->outf[1].name, "w");
+				if (!pslot_ptr->outf[1].fh) {
+					fprintf(stderr, "unable to open : %s\n", pslot_ptr->outf[1].name);
 					exit(1);
 				}
 			} /* /blind or output to file mode */
