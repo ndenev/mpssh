@@ -123,20 +123,20 @@ child()
 		fprintf(stderr, "stderr dup fail %s\n",
 			 strerror(errno));
 
-	len_u = strlen(pslot_ptr->hst->user?pslot_ptr->hst->user:user) + 3; // space for -l and \0
+	len_u = strlen(pslot_ptr->hst->user) + 3; // space for -l and \0
 	user_arg = calloc(1, len_u);
 	if (user_arg == NULL) {
 		exit(1);
 	}
 
-	len_p = strlen(pslot_ptr->hst->port?pslot_ptr->hst->port:"22") + 3; // space for -p and \0
+	len_p = strlen(pslot_ptr->hst->port) + 3; // space for -p and \0
 	port_arg = calloc(1, len_p);
 	if (port_arg == NULL) {
 		exit(1);
 	}
 
-	snprintf(user_arg, len_u, "-l%s", pslot_ptr->hst->user?pslot_ptr->hst->user:user);
-	snprintf(port_arg, len_p, "-p%s", pslot_ptr->hst->port?pslot_ptr->hst->port:"22");
+	snprintf(user_arg, len_u, "-l%s", pslot_ptr->hst->user);
+	snprintf(port_arg, len_p, "-p%s", pslot_ptr->hst->port);
 
 	execl(SSHPATH, "ssh", SSHOPTS, hkey_check?HKCHK_Y:HKCHK_N,
 			user_arg, port_arg, pslot_ptr->hst->name, cmd, NULL);

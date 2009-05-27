@@ -34,15 +34,15 @@
  * it is used internally by host_add().
  */
 static host*
-host_new(char *user, char *name, char *port)
+host_new(char *login, char *name, char *port)
 {
 	static host *hst;
 
 	if (!(hst = calloc(1, sizeof(host)))) goto fail;
 
-	if (user) {
-		if (!(hst->user = calloc(1, strlen(user)+1))) goto fail;
-		strncpy(hst->user, user, strlen(user));
+	if (login) {
+		if (!(hst->user = calloc(1, strlen(login)+1))) goto fail;
+		strncpy(hst->user, login, strlen(login));
 	} else {
 		hst->user = NULL;
 	}
@@ -74,12 +74,12 @@ fail:
  * linked list.
  */
 static host*
-host_add(host *hst, char *user, char *name, char *port)
+host_add(host *hst, char *login, char *name, char *port)
 {
 	if (hst == NULL)
-		return(host_new(user, name, port));
+		return(host_new(login, name, port));
 	
-	hst->next = host_add(hst->next, user, name, port);
+	hst->next = host_add(hst->next, login, name, port);
 	return(hst->next);
 }
 
@@ -96,7 +96,7 @@ host_readlist(char *fname)
 	char	line[MAXNAME*3];
 	int	i;
 	int	linelen;
-	char	*user;
+	char	*login;
 	char	*name;
 	char	*port;
 
@@ -116,7 +116,7 @@ host_readlist(char *fname)
 
 		linelen = strlen(line);
 
-		user = NULL;
+		login = NULL;
 		name = line;
 		port = NULL;
 
@@ -125,10 +125,10 @@ host_readlist(char *fname)
 				case '@':
 					if (port)
 						continue;
-					if (user)
+					if (login)
 						continue;
 					line[i] = '\0';
-					user = line;
+					login = line;
 					name = &line[i+1];
 					break;
 
@@ -148,7 +148,7 @@ host_readlist(char *fname)
 			}
 		}
 
-		hst = host_add(hst, user, name, port);
+		hst = host_add(hst, login?login:user, name, port?port:"22");
 
 		if (hst == NULL)
 			return(NULL);
