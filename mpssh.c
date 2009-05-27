@@ -55,6 +55,7 @@ int	blind        = 0;
 int	done         = 0;
 int	hostcount    = 0;
 int	pslots       = 0;
+int	user_len_max = 0;
 int	host_len_max = 0;
 int	print_exit   = 0;
 int	hkey_check   = 1;

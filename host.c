@@ -148,10 +148,17 @@ host_readlist(char *fname)
 			}
 		}
 
-		hst = host_add(hst, login?login:user, name, port?port:"22");
+		if (!login)
+			login = user;
+
+		hst = host_add(hst, login, name, port?port:"22");
 
 		if (hst == NULL)
 			return(NULL);
+
+		/* keep track of the longest username */
+		if (strlen(login) > user_len_max)
+			user_len_max = strlen(login);
 
 		/* keep track of the longest line */
 		if (strlen(name) > host_len_max)

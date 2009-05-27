@@ -68,6 +68,7 @@
 /* some global vars */
 extern int maxchld;
 extern const char Rev[];
+extern int user_len_max;
 extern int host_len_max;
 extern int children;
 extern int verbose;
