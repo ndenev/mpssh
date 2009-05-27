@@ -76,3 +76,4 @@ extern int print_exit;
 extern int hostcount;
 extern int blind;
 extern char *outdir;
+extern char *user;
