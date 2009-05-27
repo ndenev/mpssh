@@ -149,7 +149,6 @@ host_readlist(char *fname)
 		}
 
 		hst = host_add(hst, user, name, port);
-		printf("added %s@%s:%s\n", user, name, port);
 
 		if (hst == NULL)
 			return(NULL);
