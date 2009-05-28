@@ -106,6 +106,7 @@ child()
 {
 	int	len_u, len_p;
 	char	*user_arg, *port_arg;
+	char	 hkc_arg[28]; /* enough for : "-oStrictHostKeyChecking=" and a "yes" or "no" */
 
 	pslot_ptr->pid = 0;
 
@@ -138,11 +139,11 @@ child()
 
 	snprintf(user_arg, len_u, "-l%s", pslot_ptr->hst->user);
 	snprintf(port_arg, len_p, "-p%s", pslot_ptr->hst->port);
+	snprintf(hkc_arg, sizeof(hkc_arg), "-oStrictHostKeyChecking=%s", hkey_check?"yes":"no");
 
-	execl(SSHPATH, "ssh", SSHOPTS, hkey_check?HKCHK_Y:HKCHK_N,
-			user_arg, port_arg, pslot_ptr->hst->name, cmd, NULL);
-	fprintf(stderr, "exec failed : %s %s %s %s %s %s %s\n", SSHPATH, SSHOPTS,
-			hkey_check?HKCHK_Y:HKCHK_N, user_arg, port_arg, pslot_ptr->hst->name, cmd);
+	execl(SSHPATH, "ssh", hkc_arg, user_arg, port_arg, pslot_ptr->hst->name, cmd, NULL);
+	fprintf(stderr, "exec failed : %s %s %s %s %s %s\n",
+	    SSHPATH, hkc_arg, user_arg, port_arg, pslot_ptr->hst->name, cmd);
 	exit(1);
 }
 

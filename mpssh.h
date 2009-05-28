@@ -44,9 +44,6 @@
 #define SSHPATH	"/usr/bin/ssh"
 #endif
 
-#define SSHOPTS "-oPreferredAuthentications=publickey"
-#define HKCHK_Y "-oStrictHostKeyChecking=yes"
-#define HKCHK_N "-oStrictHostKeyChecking=no"
 #define	HSTLIST "hostlist.txt"
 #define	MAXCMD  1024				/* max command len */
 #define	MAXUSER 30				/* max username len */
