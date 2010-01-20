@@ -4,13 +4,26 @@
 .Nm mpssh
 .Sh SYNOPSIS
 .Nm
-.Op Fl besv
+.Op Fl besvV
 .Op Fl o Ar directory 
 .Op Fl u Ar username
 .Op Fl f Ar hosts
 .Op Fl p Ar procs
 .Ar <command> 
 .Sh DESCRIPTION
+
+  -h, --help         this screen
+  -u, --user=USER    login as this username
+  -p, --procs=NPROC  number of parallel ssh processes
+  -f, --file=FILE    host list file name
+  -e, --retcode      print the return code on exit
+  -b, --blind        enable blind mode (do not show remote output)
+  -o, --outdir=DIR   directory to save output files
+  -s, --nokeychk     disable ssh strict host key check
+  -v, --verbose      be more verbose and show progress
+  -V, --version      show program version
+
+
 
 The
 .Nm
