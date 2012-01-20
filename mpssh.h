@@ -44,7 +44,7 @@
 #define SSHPATH	"/usr/bin/ssh"
 #endif
 
-#define	HSTLIST "hostlist.txt"
+#define	HSTLIST ".mpssh/hosts"
 #define	MAXCMD  1024				/* max command len */
 #define	MAXUSER 30				/* max username len */
 #define	MAXCHLD 1024 				/* max child procs */
@@ -75,3 +75,4 @@ extern int hostcount;
 extern int blind;
 extern char *outdir;
 extern char *user;
+extern char *label;

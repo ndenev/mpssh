@@ -28,7 +28,7 @@
 #define LINEBUF 120	/* max output line len */
 
 
-/* stdout/err structure for struct process_slot */
+/* stdout/err structure for struct procslot */
 struct
 stdio_pipe {
 	int     out[2];
@@ -44,7 +44,7 @@ out_files {
 
 /* process slot structure */
 struct
-process_slot {
+procslot {
 	int	pid;
 	struct  host  *hst;
 	char    out_buf[LINEBUF];
@@ -53,15 +53,12 @@ process_slot {
 	int	used;
 	int	ret;
 	struct  stdio_pipe io;
-	struct	process_slot	*prev;
-	struct	process_slot	*next;
+	struct	procslot	*prev;
+	struct	procslot	*next;
 };
 
-/* typedefs */
-typedef struct process_slot procslt;
-
 /* global process slot var */
-extern procslt *pslot_ptr;
+extern struct procslot *pslot_ptr;
 
 /* other global vars */
 extern int pslots;

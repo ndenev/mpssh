@@ -30,13 +30,13 @@
 #include "host.h"
 
 /*
- * process slot initialization routine 
+ * process slot initialization routine
  */
-procslt*
-pslot_new(int pid, host *hst)
+struct procslot*
+pslot_new(int pid, struct host *hst)
 {
-	procslt *pslot_tmp;
-	pslot_tmp = calloc(1, sizeof(procslt));
+	struct procslot *pslot_tmp;
+	pslot_tmp = calloc(1, sizeof(struct procslot));
 	if (pslot_tmp == NULL) {
 		fprintf(stderr, "%s\n",
 			strerror(errno));
@@ -61,10 +61,10 @@ pslot_new(int pid, host *hst)
  * routine for adding new process slot in the
  * circular doubly linked list of proccess slots
  */
-procslt*
-pslot_add(procslt *pslot, int pid, host *hst)
+struct procslot*
+pslot_add(struct procslot *pslot, int pid, struct host *hst)
 {
-	procslt *pslot_tmp;
+	struct procslot *pslot_tmp;
 	if (!pslot) { /* first entry special case */
 		pslot = pslot_new(pid, hst);
 		pslot->prev = pslot;
@@ -86,13 +86,13 @@ pslot_add(procslt *pslot, int pid, host *hst)
  * it adjusts the links of the neighbor pslots and free()'s
  * the slot, closing it's piped descriptors
  */
-procslt*
-pslot_del(procslt *pslot)
+struct procslot*
+pslot_del(struct procslot *pslot)
 {
-	procslt *pslot_todel;
+	struct procslot *pslot_todel;
 	int	is_last = 0;
 	if (!pslot) return(NULL);
-	
+
 	if (pslot == pslot->next)
 		is_last = 1;
 
@@ -139,8 +139,8 @@ pslot_del(procslt *pslot)
  * it iterates thru the process slots and finds the slot
  * with the pid that we have supplied as argument.
  */
-procslt*
-pslot_bypid(procslt *pslot, int pid)
+struct procslot*
+pslot_bypid(struct procslot *pslot, int pid)
 {
 	int i;
 	for (i=0; i <= children; i++) {
@@ -152,7 +152,7 @@ pslot_bypid(procslt *pslot, int pid)
 }
 
 int
-pslot_readbuf(procslt *pslot, int outfd)
+pslot_readbuf(struct procslot *pslot, int outfd)
 {
 	int i,fd;
 	char buf;
@@ -177,16 +177,16 @@ pslot_readbuf(procslt *pslot, int outfd)
 		if (i < 0) {
 			if (errno == EINTR) continue;
 			return 0;
-		}	
+		}
 		if (buf == '\n') return 1;
 		strncat(bufp, &buf, 1);
-	       	if (strlen(bufp) >= (LINEBUF-1)) return 1;
+		if (strlen(bufp) >= (LINEBUF-1)) return 1;
 	}
 
 }
 
 void
-pslot_printbuf(procslt *pslot, int outfd)
+pslot_printbuf(struct procslot *pslot, int outfd)
 {
 	int	i;
 	char	*bufp;
@@ -213,9 +213,9 @@ pslot_printbuf(procslt *pslot, int outfd)
 	}
 
 	if (verbose) {
-		snprintf(progress, sizeof(progress), "[%5.1f%%]", (float)done/(float)hostcount*100);
+		snprintf(progress, sizeof(progress), "[%d/%d]",done+1, hostcount);
 	} else {
-	       	progress[0] = '\0';
+		progress[0] = '\0';
 	}
 
 	if (strlen(bufp)) {
@@ -227,11 +227,11 @@ pslot_printbuf(procslt *pslot, int outfd)
 		}
 		if (!blind) {
 			/* print to console */
-			//fprintf(stream, "%-*s %s%s %s\n", host_len_max, pslot->hst->name,
+			//fprintf(stream, "%-*s %s%s %s\n", host_len_max, pslot->hst->host,
 			//	progress, stream_pfx[isatty(fileno(stream))+1], bufp);
 			fprintf(stream, "%-*s@%-*s %s%s %s\n",
 				user_len_max, pslot->hst->user,
-				host_len_max, pslot->hst->name,
+				host_len_max, pslot->hst->host,
 				progress,
 				stream_pfx[isatty(fileno(stream))+1],
 				bufp);
@@ -251,27 +251,27 @@ pslot_printbuf(procslt *pslot, int outfd)
 			 * green if return code is zero and red if differs from zero
 			 * pfx_ret[isatty(fileno(stdout))?(pslot->ret?2:1):0]
 			 */
-			//printf("%-*s %s%s %d\n", host_len_max, pslot->hst->name,
+			//printf("%-*s %s%s %d\n", host_len_max, pslot->hst->host,
 			//	progress, pfx_ret[isatty(fileno(stdout))?(pslot->ret?2:1):0], pslot->ret);
 			printf("%-*s@%-*s %s%s %d\n",
 				user_len_max, pslot->hst->user,
-				host_len_max, pslot->hst->name,
+				host_len_max, pslot->hst->host,
 				progress,
 				pfx_ret[isatty(fileno(stdout))?(pslot->ret?2:1):0],
 				pslot->ret);
 			fflush(stdout);
 		} else if (!pslot->used && !outdir && verbose) {
-			//printf("%-*s %s\n", host_len_max, pslot->hst->name, progress);
+			//printf("%-*s %s\n", host_len_max, pslot->hst->host, progress);
 			printf("%-*s@%-*s %s\n",
 				user_len_max, pslot->hst->user,
-				host_len_max, pslot->hst->name,
+				host_len_max, pslot->hst->host,
 				progress);
 		}
 	}
 
 	if (outdir && blind && verbose && !pslot->pid && (outfd == OUT) && (!strlen(bufp))) {
 		if (done > 1) for (i=1; i<host_len_max + 10; i++) printf("\b");
-		printf("%-*s %s", host_len_max, pslot->hst->name, progress);
+		printf("%-*s %s", host_len_max, pslot->hst->host, progress);
 		fflush(stdout);
 	}
 

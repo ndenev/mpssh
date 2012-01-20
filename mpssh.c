@@ -44,11 +44,12 @@ const char Ident[] = "$Id$";
 const char Ver[] = "HEAD";
 
 /* global vars */
-procslt	*pslot_ptr   = NULL;
+struct	procslot	*pslot_ptr   = NULL;
 char	*cmd         = NULL;
 char	*user        = NULL;
 char	*fname       = NULL;
-char   *outdir       = NULL;
+char	*outdir      = NULL;
+char	*label       = NULL;
 int	children     = 0;
 int	maxchld      = 0;
 int	blind        = 0;
@@ -64,12 +65,12 @@ sigset_t	sigmask;
 sigset_t	osigmask;
 
 /* function declarations */
-host	*host_readlist(char *);
-procslt	*pslot_add(procslt *, int, host *);
-procslt	*pslot_del(procslt *);
-procslt	*pslot_bypid(procslt *, int);
-void	pslot_printbuf(procslt *, int);
-int	pslot_readbuf(procslt *, int);
+struct	host		*host_readlist(char *);
+struct	procslot	*pslot_add(struct procslot *, int, struct host *);
+struct	procslot	*pslot_del(struct procslot *);
+struct	procslot	*pslot_bypid(struct procslot *, int);
+void			pslot_printbuf(struct procslot *, int);
+int			pslot_readbuf(struct procslot *, int);
 
 /*
  * child reaping routine. it is installed as signal
@@ -90,7 +91,7 @@ reap_child()
 			pslot_printbuf(pslot_ptr, OUT);
 		while (pslot_readbuf(pslot_ptr, ERR))
 			pslot_printbuf(pslot_ptr, ERR);
-		/* 
+		/*
 		 * make sure that we print some output in verbose mode
 		 * even if there is no data in the buffer
 		 */
@@ -106,7 +107,8 @@ child()
 {
 	int	len_u, len_p;
 	char	*user_arg, *port_arg;
-	char	 hkc_arg[28]; /* enough for : "-oStrictHostKeyChecking=" and a "yes" or "no" */
+	/* enough for : "-oStrictHostKeyChecking=" and a "yes" or "no" */
+	char	 hkc_arg[28];
 
 	pslot_ptr->pid = 0;
 
@@ -125,13 +127,15 @@ child()
 		fprintf(stderr, "stderr dup fail %s\n",
 			 strerror(errno));
 
-	len_u = strlen(pslot_ptr->hst->user) + 3; // space for -l and \0
+	/* space for -l and \0 */
+	len_u = strlen(pslot_ptr->hst->user) + 3;
 	user_arg = calloc(1, len_u);
 	if (user_arg == NULL) {
 		exit(1);
 	}
 
-	len_p = strlen(pslot_ptr->hst->port) + 3; // space for -p and \0
+	/* space for -p and \0 */
+	len_p = strlen(pslot_ptr->hst->port) + 3;
 	port_arg = calloc(1, len_p);
 	if (port_arg == NULL) {
 		exit(1);
@@ -139,11 +143,14 @@ child()
 
 	snprintf(user_arg, len_u, "-l%s", pslot_ptr->hst->user);
 	snprintf(port_arg, len_p, "-p%s", pslot_ptr->hst->port);
-	snprintf(hkc_arg, sizeof(hkc_arg), "-oStrictHostKeyChecking=%s", hkey_check?"yes":"no");
+	snprintf(hkc_arg,sizeof(hkc_arg), "-oStrictHostKeyChecking=%s",
+			hkey_check?"yes":"no");
 
-	execl(SSHPATH, "ssh", hkc_arg, user_arg, port_arg, pslot_ptr->hst->name, cmd, NULL);
+	execl(SSHPATH, "ssh", hkc_arg, user_arg, port_arg,
+		pslot_ptr->hst->host, cmd, NULL);
 	fprintf(stderr, "exec failed : %s %s %s %s %s %s\n",
-	    SSHPATH, hkc_arg, user_arg, port_arg, pslot_ptr->hst->name, cmd);
+		SSHPATH, hkc_arg, user_arg,
+		port_arg, pslot_ptr->hst->host, cmd);
 	exit(1);
 }
 
@@ -165,19 +172,20 @@ show_ver()
 void
 usage(char *msg)
 {
-	printf( "\n  Usage: mpssh [-u username] [-p numprocs] [-f hostlist]\n"
-		"               [-e] [-b] [-o /some/dir] [-s] [-v] <command>\n\n"
-		"  -h, --help         this screen\n"
-		"  -u, --user=USER    login as this username\n"
-		"  -p, --procs=NPROC  number of parallel ssh processes\n"
-		"  -f, --file=FILE    host list file name\n"
-		"  -e, --retcode      print the return code on exit\n"
-		"  -b, --blind        enable blind mode (do not show remote output)\n"
-		"  -o, --outdir=DIR   directory to save output files\n"
-		"  -s, --nokeychk     disable ssh strict host key check\n"
-		"  -v, --verbose      be more verbose and show progress\n"
-		"  -V, --version      show program version\n"
-		"\n");
+	printf("\n  Usage: mpssh [-u username] [-p numprocs] [-f hostlist]\n"
+	       "              [-e] [-b] [-o /some/dir] [-s] [-v] <command>\n\n"
+	       "  -h, --help         this screen\n"
+	       "  -u, --user=USER    ssh login as this username\n"
+	       "  -p, --procs=NPROC  number of parallel ssh processes\n"
+	       "  -f, --file=FILE    name of the file with the list of hosts\n"
+	       "  -l, --label=LABEL  connect only to hosts under label LABEL\n"
+	       "  -e, --exit         print the remote command return code\n"
+	       "  -b, --blind        enable blind mode (no remote output)\n"
+	       "  -o, --outdir=DIR   save the remote output in this directory\n"
+	       "  -s, --nokeychk     disable ssh strict host key check\n"
+	       "  -v, --verbose      be more verbose and show progress\n"
+	       "  -V, --version      show program version\n"
+	       "\n");
 	if (msg)
 		printf("   *** %s\n\n", msg);
 
@@ -191,19 +199,21 @@ parse_opts(int *argc, char ***argv)
 
 	static struct option longopts[] = {
 		{ "blind",	no_argument,		NULL,		'b' },
-		{ "retcode",	no_argument,		NULL,		'e' },
+		{ "exit",	no_argument,		NULL,		'e' },
 		{ "file",	required_argument,	NULL,		'f' },
 		{ "help",	no_argument,		NULL,		'h' },
+		{ "label",	required_argument,	NULL,		'l' },
 		{ "outdir",	required_argument,	NULL,		'o' },
 		{ "procs",	required_argument,	NULL,		'p' },
 		{ "user",	required_argument,	NULL,		'u' },
 		{ "nokeychk",	no_argument,		NULL,		's' },
 		{ "verbose",	no_argument,		NULL,		'v' },
-		{ "version",	no_argument,		NULL,		'V' },	
+		{ "version",	no_argument,		NULL,		'V' },
 		{ NULL,		0,			NULL,		0},
 	};
 
-	while ((opt = getopt_long(*argc, *argv, "bef:ho:p:u:svV", longopts, NULL)) != -1) {
+	while ((opt = getopt_long(*argc, *argv,
+				"bef:hl:o:p:u:svV", longopts, NULL)) != -1) {
 		switch (opt) {
 			case 'b':
 				blind = 1;
@@ -222,6 +232,9 @@ parse_opts(int *argc, char ***argv)
 				break;
 			case 'h':
 				usage(NULL);
+				break;
+			case 'l':
+				label = optarg;
 				break;
 			case 'o':
 				if (outdir)
@@ -280,7 +293,7 @@ parse_opts(int *argc, char ***argv)
 int
 main(int argc, char *argv[])
 {
-	host	*hst;
+	struct	host	*hst;
 	int	i, pid;
 	fd_set	readfds;
 	int	children_fds;
@@ -305,15 +318,21 @@ main(int argc, char *argv[])
 		"(c)2005-2009 N.Denev <ndenev@gmail.com>\n"
 		"%s\n\n"
 		"  [*] read (%d) hosts from the list\n"
-		"  [*] executing \"%s\" as user \"%s\" on each\n",
+		"  [*] executing \"%s\" as user \"%s\"\n",
 		Ver, Ident, hostcount, cmd, user);
+
+	if (label)
+		printf("  [*] only on hosts labeled \"%s\"\n", label);
 
 	if (!hkey_check)
 		printf("  [*] strict host key check disabled\n");
+
 	if (blind)
 		printf("  [*] blind mode enabled\n");
+
 	if (verbose)
 		printf("  [*] verbose mode enabled\n");
+
 	if (outdir) {
 		if (!access(outdir, R_OK | W_OK | X_OK)) {
 			printf("  [*] using output directory : %s\n", outdir);
@@ -341,14 +360,14 @@ main(int argc, char *argv[])
 				 * hostname, a dot and a three letter file extension (out/err) and the terminating null char
 				 */
 				i = strlen(outdir) + strlen("/") + strlen(pslot_ptr->hst->user) + strlen("@");
-				i += strlen(pslot_ptr->hst->name) + strlen(".ext") + 1;
+				i += strlen(pslot_ptr->hst->host) + strlen(".ext") + 1;
 				/* setup the stdout output file */
 				pslot_ptr->outf[0].name = calloc(1, i);
 				if (!pslot_ptr->outf[0].name) {
 					fprintf(stderr, "unable to malloc memory for filename\n");
 					exit(1);
 				}
-				sprintf(pslot_ptr->outf[0].name, "%s/%s@%s.out", outdir, pslot_ptr->hst->user, pslot_ptr->hst->name);
+				sprintf(pslot_ptr->outf[0].name, "%s/%s@%s.out", outdir, pslot_ptr->hst->user, pslot_ptr->hst->host);
 				pslot_ptr->outf[0].fh = fopen(pslot_ptr->outf[0].name, "w");
 				if (!pslot_ptr->outf[0].fh) {
 					fprintf(stderr, "unable to open : %s\n", pslot_ptr->outf[0].name);
@@ -360,7 +379,7 @@ main(int argc, char *argv[])
 					fprintf(stderr, "unable to malloc memory for filename\n");
 					exit(1);
 				}
-				sprintf(pslot_ptr->outf[1].name, "%s/%s@%s.err", outdir, pslot_ptr->hst->user, pslot_ptr->hst->name);
+				sprintf(pslot_ptr->outf[1].name, "%s/%s@%s.err", outdir, pslot_ptr->hst->user, pslot_ptr->hst->host);
 				pslot_ptr->outf[1].fh = fopen(pslot_ptr->outf[1].name, "w");
 				if (!pslot_ptr->outf[1].fh) {
 					fprintf(stderr, "unable to open : %s\n", pslot_ptr->outf[1].name);
@@ -394,7 +413,7 @@ main(int argc, char *argv[])
 			FD_SET(pslot_ptr->io.out[0], &readfds);
 			FD_SET(pslot_ptr->io.err[0], &readfds);
 			pslot_ptr = pslot_ptr->next;
-        	}
+		}
 		if (children == maxchld || !hst) {
 			timeout = NULL;
 		} else {

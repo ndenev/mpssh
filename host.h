@@ -25,16 +25,13 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define MAXNAME 255 /* max hostname len */
+#define MAXNAME		255 /* max hostname len */
 
 /* host list structs */
 struct
 host {
 	char	*user;
-	char    *name;
+	char    *host;
 	char	*port;
 	struct  host  *next;
 };
-
-/* typedefs */
-typedef struct host host;

@@ -33,25 +33,25 @@
  * linked list containing the hosts read from the file.
  * it is used internally by host_add().
  */
-static host*
-host_new(char *login, char *name, char *port)
+static struct host*
+host_new(char *user, char *host, char *port)
 {
-	static host *hst;
+	static struct host *hst;
 
-	if (!(hst = calloc(1, sizeof(host)))) goto fail;
+	if (!(hst = calloc(1, sizeof(struct host)))) goto fail;
 
-	if (login) {
-		if (!(hst->user = calloc(1, strlen(login)+1))) goto fail;
-		strncpy(hst->user, login, strlen(login));
+	if (user) {
+		if (!(hst->user = calloc(1, strlen(user)+1))) goto fail;
+		strncpy(hst->user, user, strlen(user));
 	} else {
 		hst->user = NULL;
 	}
 
-	if (name) {
-		if (!(hst->name = calloc(1, strlen(name)+1))) goto fail;
-		strncpy(hst->name, name, strlen(name));
+	if (host) {
+		if (!(hst->host = calloc(1, strlen(host)+1))) goto fail;
+		strncpy(hst->host, host, strlen(host));
 	} else {
-		hst->name = NULL;
+		hst->host = NULL;
 	}
 
 	if (port) {
@@ -73,13 +73,13 @@ fail:
  * routine for adding elements in the existing hostlist
  * linked list.
  */
-static host*
-host_add(host *hst, char *login, char *name, char *port)
+static struct host*
+host_add(struct host *hst, char *user, char *host, char *port)
 {
 	if (hst == NULL)
-		return(host_new(login, name, port));
-	
-	hst->next = host_add(hst->next, login, name, port);
+		return(host_new(user, host, port));
+
+	hst->next = host_add(hst->next, user, host, port);
 	return(hst->next);
 }
 
@@ -87,18 +87,20 @@ host_add(host *hst, char *login, char *name, char *port)
  * routine that reads the host from a file and puts them
  * in the hostlist linked list using the above two routines
  */
-host*
+struct host*
 host_readlist(char *fname)
 {
 	FILE    *hstlist;
-	host	*hst;
-	host	*hst_head;
+	struct	host	*hst;
+	struct	host	*hst_head;
 	char	line[MAXNAME*3];
 	int	i;
 	int	linelen;
-	char	*login;
-	char	*name;
-	char	*port;
+	int	portn;
+	char	*login = NULL;
+	char	*hostname = NULL;
+	char	*port = NULL;
+	char	*llabel = NULL;
 
 	if (fname == NULL)
 		return(NULL);
@@ -111,47 +113,67 @@ host_readlist(char *fname)
 	hst_head = hst = host_add(NULL, NULL, NULL, NULL);
 
 	while (fgets(line, sizeof(line), hstlist)) {
-		if (sscanf(line, "%[A-Za-z0-9-.@:]", line) != 1)
+		if (sscanf(line, "%[A-Za-z0-9-.@:%]", line) != 1) {
 			continue;
+		}
 
 		linelen = strlen(line);
 
-		login = NULL;
-		name = line;
+		if (line[0] == '%') {
+			llabel = calloc(1, linelen + 1);
+			if (llabel == NULL) {
+				fprintf(stderr, "%s\n", strerror(errno));
+				return(NULL);
+			}
+			strncpy(llabel, &line[1], linelen);
+			continue;
+		}
+
+		hostname = line;
 		port = NULL;
+		login = NULL;
 
 		for (i=0; i < linelen; i++) {
 			switch (line[i]) {
 				case '@':
-					if (port)
-						continue;
-					if (login)
-						continue;
+					if (port || login)
+						break;
 					line[i] = '\0';
 					login = line;
-					name = &line[i+1];
+					hostname = &line[i+1];
 					break;
-
-				case ':': 
+				case ':':
 					if (port)
-						continue;
+						break;
 					line[i] = '\0';
 					port = &line[i+1];
-					errno = 0;
-					(int)strtol(port, (char **)NULL, 10);
-					if (errno)
-						port = NULL;
 					break;
-
 				default:
 					break;
 			}
 		}
 
+		if (!hostname)
+			continue;
+
+		errno = 0;
+		if (port)
+			portn = (int)strtol(port, (char **)NULL, 10);
+
+		if (errno)
+			port = NULL;
+
 		if (!login)
 			login = user;
 
-		hst = host_add(hst, login, name, port?port:"22");
+		/* check if labels match */
+		if (label && llabel) {
+			if (strcmp(llabel, label))
+				continue;
+		}
+
+		/* add the host record */
+		hst = host_add(hst, user, hostname, port?port:"22");
 
 		if (hst == NULL)
 			return(NULL);
@@ -161,14 +183,16 @@ host_readlist(char *fname)
 			user_len_max = strlen(login);
 
 		/* keep track of the longest line */
-		if (strlen(name) > host_len_max)
-			host_len_max = strlen(name); 
+		if (strlen(hostname) > host_len_max)
+			host_len_max = strlen(hostname);
 
 		hostcount++;
 	}
+	if (llabel)
+		free(llabel);
 	fclose(hstlist);
 	if (maxchld > hostcount) maxchld = hostcount;
 	hst = hst_head->next;
-	free(hst_head);	
+	free(hst_head);
 	return(hst);
 }
