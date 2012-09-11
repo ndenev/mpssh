@@ -1,5 +1,5 @@
 
-mpssh - Mass Parallel Secure Shell. (c) 2005-2009 Niki Denev <ndenev@gmail.com>
+mpssh - Mass Parallel Secure Shell. (c) 2005-2012 Nikolay Denev <ndenev@gmail.com>
 
 This program reads list of machines from text file (one hostname at line)
 and connects to all of the machines by creating upto N parallel ssh
@@ -9,4 +9,8 @@ The number of parallel sessions N, the filename of the list of machine
 and the username to login as are user configurable.
 
 mpssh uses the ssh binary from the openssh package.
-there are no other external dependancies
+There are no other external dependancies
+mpssh depends on preexisting passwordless authentication method such as
+pubkey or kerberos to work.
+mpssh supports alternative ssh ports and different usernames per host.
+
