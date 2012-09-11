@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2005-2009 Niki Denev <ndenev@gmail.com>
+ * Copyright (c) 2005-2012 Nikolay Denev <ndenev@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

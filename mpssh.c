@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2005-2009 Niki Denev <ndenev@gmail.com>
+ * Copyright (c) 2005-2012 Nikolay Denev <ndenev@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,7 +26,7 @@
  */
 
 /*
- * mpssh - Mass Parallel Secure Shell. (c) 2005 Niki Denev
+ * mpssh - Mass Parallel Secure Shell. (c) 2012 Nikolay Denev
  *
  * This program reads list of machines from text file (one hostname at line)
  * and connects to all of the machines by creating upto N parallel ssh
