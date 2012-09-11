@@ -146,7 +146,7 @@ child()
 	snprintf(hkc_arg,sizeof(hkc_arg), "-oStrictHostKeyChecking=%s",
 			hkey_check?"yes":"no");
 
-	execl(SSHPATH, "ssh", hkc_arg, user_arg, port_arg,
+	execl(SSHPATH, "ssh", "-q", hkc_arg, user_arg, port_arg,
 		pslot_ptr->hst->host, cmd, NULL);
 	fprintf(stderr, "exec failed : %s %s %s %s %s %s\n",
 		SSHPATH, hkc_arg, user_arg,
@@ -311,7 +311,7 @@ main(int argc, char *argv[])
 	if (blind && !outdir)
 		usage("can't use blind mode without outdir");
 
-	if (!(hst = host_readlist(fname?fname:HSTLIST)))
+	if (!(hst = host_readlist(fname)))
 		usage("problem with file");
 
 	printf( "MPSSH - Mass Parallel Ssh Ver.%s\n"

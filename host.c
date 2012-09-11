@@ -102,8 +102,9 @@ host_readlist(char *fname)
 	char	*port = NULL;
 	char	*llabel = NULL;
 
-	if (fname == NULL)
-		return(NULL);
+	if (fname == NULL) {
+		fname = "/Users/ndenev/.mpssh/hosts";
+	}
 
 	hstlist = fopen(fname, "r");
 
@@ -136,7 +137,7 @@ host_readlist(char *fname)
 		for (i=0; i < linelen; i++) {
 			switch (line[i]) {
 				case '@':
-					if (port || login)
+					if (login)
 						break;
 					line[i] = '\0';
 					login = line;
@@ -173,7 +174,7 @@ host_readlist(char *fname)
 		}
 
 		/* add the host record */
-		hst = host_add(hst, user, hostname, port?port:"22");
+		hst = host_add(hst, login, hostname, port?port:"22");
 
 		if (hst == NULL)
 			return(NULL);
