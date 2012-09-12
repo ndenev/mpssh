@@ -40,7 +40,6 @@
 #include "host.h"
 #include "pslot.h"
 
-const char Ident[] = "$Id$";
 const char Ver[] = "HEAD";
 
 /* global vars */
@@ -161,7 +160,6 @@ void
 show_ver()
 {
 	printf("mpssh-%s\n", Ver);
-	printf("%s\n", Ident);
 	exit(0);
 }
 
@@ -315,11 +313,10 @@ main(int argc, char *argv[])
 		usage("problem with file");
 
 	printf( "MPSSH - Mass Parallel Ssh Ver.%s\n"
-		"(c)2005-2009 N.Denev <ndenev@gmail.com>\n"
-		"%s\n\n"
+		"(c)2005-2009 N.Denev <ndenev@gmail.com>\n\n"
 		"  [*] read (%d) hosts from the list\n"
 		"  [*] executing \"%s\" as user \"%s\"\n",
-		Ver, Ident, hostcount, cmd, user);
+		Ver, hostcount, cmd, user);
 
 	if (label)
 		printf("  [*] only on hosts labeled \"%s\"\n", label);
