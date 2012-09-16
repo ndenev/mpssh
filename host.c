@@ -97,19 +97,35 @@ host_readlist(char *fname)
 	int	i;
 	int	linelen;
 	int	portn;
+	int	fnamelen;
 	char	*login = NULL;
 	char	*hostname = NULL;
 	char	*port = NULL;
 	char	*llabel = NULL;
+	char	*home;
 
 	if (fname == NULL) {
-		fname = "/Users/ndenev/.mpssh/hosts";
+		home = getenv("HOME");
+		if (!home)
+			return(NULL);
+
+		fnamelen = strlen(home) + strlen("/.mpssh/hosts") + 1;
+
+		fname = calloc(1, fnamelen);
+
+		if (!fname)
+			return(NULL);
+
+		sprintf(fname, "%s/.mpssh/hosts", home);
 	}
 
 	hstlist = fopen(fname, "r");
 
-	if (hstlist == NULL)
+	if (hstlist == NULL) {
+		fprintf(stderr, "Can't open file: %s (%s)\n",
+			fname, strerror(errno));
 		return(NULL);
+	}
 
 	hst_head = hst = host_add(NULL, NULL, NULL, NULL);
 
