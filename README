@@ -13,4 +13,5 @@ There are no other external dependancies
 mpssh depends on preexisting passwordless authentication method such as
 pubkey or kerberos to work.
 mpssh supports alternative ssh ports and different usernames per host.
-
+Also the hosts can be grouped and one can execute the same command on all hosts in
+a group by specifying the group label with the -l option.
