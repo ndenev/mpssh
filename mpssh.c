@@ -334,8 +334,12 @@ main(int argc, char *argv[])
 		if (!access(outdir, R_OK | W_OK | X_OK)) {
 			printf("  [*] using output directory : %s\n", outdir);
 		} else {
-			printf("\n *** can't access output dir : %s, aborting\n", outdir);
-			exit(1);
+			printf("  [*] creating output directory : %s\n", outdir);
+			if (mkdir(outdir, 0755)) {
+				printf("\n *** can't create output dir : ");
+				perror(outdir);
+				exit(1);
+			}
 		}
 	}
 	printf("  [*] spawning %d parallel ssh sessions\n\n",
