@@ -413,7 +413,8 @@ main(int argc, char *argv[])
 		for (i=0; i <= children_fds; i++) {
 			FD_SET(pslot_ptr->io.out[0], &readfds);
 			FD_SET(pslot_ptr->io.err[0], &readfds);
-			pslot_ptr = pslot_ptr->next;
+			if (pslot_ptr->next)
+				pslot_ptr = pslot_ptr->next;
 		}
 		if (children == maxchld || !hst) {
 			timeout = NULL;

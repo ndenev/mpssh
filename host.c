@@ -96,7 +96,7 @@ host_readlist(char *fname)
 	char	line[MAXNAME*3];
 	int	i;
 	int	linelen;
-	int	portn;
+	int	portn = 0;
 	int	fnamelen;
 	char	*login = NULL;
 	char	*hostname = NULL;
@@ -137,9 +137,12 @@ host_readlist(char *fname)
 		linelen = strlen(line);
 
 		if (line[0] == '%') {
+			if (llabel)
+				free(llabel);
 			llabel = calloc(1, linelen + 1);
 			if (llabel == NULL) {
 				fprintf(stderr, "%s\n", strerror(errno));
+				free(llabel);
 				return(NULL);
 			}
 			strncpy(llabel, &line[1], linelen);
@@ -177,6 +180,9 @@ host_readlist(char *fname)
 		if (port)
 			portn = (int)strtol(port, (char **)NULL, 10);
 
+		if (portn == 0)
+			port = NULL;
+
 		if (errno)
 			port = NULL;
 
@@ -196,7 +202,7 @@ host_readlist(char *fname)
 			return(NULL);
 
 		/* keep track of the longest username */
-		if (strlen(login) > user_len_max)
+		if (login && strlen(login) > user_len_max)
 			user_len_max = strlen(login);
 
 		/* keep track of the longest line */
