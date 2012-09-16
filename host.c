@@ -91,7 +91,7 @@ host_readlist(char *fname)
 	char		line[MAXNAME*3];
 	int		i;
 	int 		linelen;
-	unsigned long	port = 0;
+	unsigned long	port;
 	int		fnamelen;
 	char		*login = NULL;
 	char		*hostname = NULL;
@@ -145,6 +145,7 @@ host_readlist(char *fname)
 
 		hostname = line;
 		login = NULL;
+		port = 0;
 
 		for (i=0; i < linelen; i++) {
 			switch (line[i]) {
@@ -156,11 +157,8 @@ host_readlist(char *fname)
 					hostname = &line[i+1];
 					break;
 				case ':':
-					if (port)
-						break;
 					line[i] = '\0';
 					port = strtol(&line[i+1], (char **)NULL, 10);
-					if (port > 65535) port = 0;
 					break;
 				default:
 					break;
@@ -182,7 +180,9 @@ host_readlist(char *fname)
 		}
 
 		/* add the host record */
-		hst = host_add(hst, login, hostname, (uint16_t)port?(uint16_t)port:22);
+		hst = host_add(hst, login, hostname, (uint16_t)port?(uint16_t)port:SSHDEFPORT);
+
+		port = 0;
 
 		if (hst == NULL)
 			return(NULL);

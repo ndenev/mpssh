@@ -45,6 +45,8 @@
 #define SSHPATH	"/usr/bin/ssh"
 #endif
 
+#define SSHDEFPORT 22
+
 /* Default hosts filename, relative to users homedir */
 #define	HSTLIST ".mpssh/hosts"
 #define	MAXCMD  1024				/* max command len */
