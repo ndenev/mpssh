@@ -109,14 +109,14 @@ host_readlist(char *fname)
 		if (!home)
 			return(NULL);
 
-		fnamelen = strlen(home) + strlen("/.mpssh/hosts") + 1;
+		fnamelen = strlen(home) + strlen("/"HSTLIST) + 1;
 
 		fname = calloc(1, fnamelen);
 
 		if (!fname)
 			return(NULL);
 
-		sprintf(fname, "%s/.mpssh/hosts", home);
+		sprintf(fname, "%s/"HSTLIST, home);
 	}
 
 	hstlist = fopen(fname, "r");
