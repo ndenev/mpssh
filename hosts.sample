@@ -1,0 +1,22 @@
+#
+# This is a sample "hosts" file for mpssh.
+# Either install similar file as ~/.mpssh/hosts or specify it
+# with the -f command line option.
+# Lines starting with # are comments and are ignored.
+# Lines starting with % are group labels.
+# All other lines are parsed as hosts definitions
+# You can specify username with prepending it to the hostname separated by the @ char.
+# You can spefify alternative port name by appending colon and the port number after the hostname.
+# By default port 22 is used, and the username of the current user is used.
+
+%localhost
+root@localhost:22
+%routers
+mgmt@router1.datacenter1:2222
+mgmt@router2.datacenter1:2222
+mgmt@router1.datacenter2:2222
+mgmt@router2.datacenter2:2222
+%app
+jboss@app-srv1.datacenter1
+jboss@app-srv2.datacenter1
+
