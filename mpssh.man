@@ -44,11 +44,11 @@ This flag disables the ssh(1)'s strict host key checking. For more info see the 
 .It Fl v
 This flag makes the output more verbose.
 .It Fl o Ar directory 
-This option creates files in "directory" named after each host name listed in the "hosts" file and saves the output received from the remotely executed command there.
+This option creates files in the specified directory named after each host name listed in the "hosts" file and saves the output received from the remotely executed command there. If the directory does not exists and attempt is made to be created.
 .It Fl u Ar username
 This forces ssh to use the supplied username instead of the username of the current user.
 .It Fl f Ar hosts
-A file containing a list of hosts to whom we are going to connect. One host per line. Lines starting with # are skipped.
+A file containing a list of hosts to whom we are going to connect. One host per line. Lines starting with # are skipped. If not specified $HOME/.mpssh/hosts will be used.
 .It Fl p Ar procs
 Spawn up-to "procs" number of ssh processes in parallel.
 .El

@@ -313,7 +313,7 @@ main(int argc, char *argv[])
 		usage("problem with file");
 
 	printf( "MPSSH - Mass Parallel Ssh Ver.%s\n"
-		"(c)2005-2009 N.Denev <ndenev@gmail.com>\n\n"
+		"(c)2005-2012 Nikolay Denev <ndenev@gmail.com>\n\n"
 		"  [*] read (%d) hosts from the list\n"
 		"  [*] executing \"%s\" as user \"%s\"\n",
 		Ver, hostcount, cmd, user);
