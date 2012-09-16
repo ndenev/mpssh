@@ -12,18 +12,18 @@
 .Ar <command> 
 .Sh DESCRIPTION
 
+
   -h, --help         this screen
-  -u, --user=USER    login as this username
+  -u, --user=USER    ssh login as this username
   -p, --procs=NPROC  number of parallel ssh processes
-  -f, --file=FILE    host list file name
-  -e, --retcode      print the return code on exit
-  -b, --blind        enable blind mode (do not show remote output)
-  -o, --outdir=DIR   directory to save output files
+  -f, --file=FILE    name of the file with the list of hosts
+  -l, --label=LABEL  connect only to hosts under label LABEL
+  -e, --exit         print the remote command return code
+  -b, --blind        enable blind mode (no remote output)
+  -o, --outdir=DIR   save the remote output in this directory
   -s, --nokeychk     disable ssh strict host key check
   -v, --verbose      be more verbose and show progress
   -V, --version      show program version
-
-
 
 The
 .Nm
