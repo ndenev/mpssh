@@ -34,7 +34,7 @@
  * it is used internally by host_add().
  */
 static struct host*
-host_new(char *user, char *host, char *port)
+host_new(char *user, char *host, uint16_t port)
 {
 	static struct host *hst;
 
@@ -54,12 +54,7 @@ host_new(char *user, char *host, char *port)
 		hst->host = NULL;
 	}
 
-	if (port) {
-		if (!(hst->port = calloc(1, strlen(port)+1))) goto fail;
-		strncpy(hst->port, port, strlen(port));
-	} else {
-		hst->port = NULL;
-	}
+	hst->port = port;
 
 	hst->next = NULL;
 
@@ -74,7 +69,7 @@ fail:
  * linked list.
  */
 static struct host*
-host_add(struct host *hst, char *user, char *host, char *port)
+host_add(struct host *hst, char *user, char *host, uint16_t port)
 {
 	if (hst == NULL)
 		return(host_new(user, host, port));
@@ -90,19 +85,18 @@ host_add(struct host *hst, char *user, char *host, char *port)
 struct host*
 host_readlist(char *fname)
 {
-	FILE    *hstlist;
-	struct	host	*hst;
-	struct	host	*hst_head;
-	char	line[MAXNAME*3];
-	int	i;
-	int	linelen;
-	int	portn = 0;
-	int	fnamelen;
-	char	*login = NULL;
-	char	*hostname = NULL;
-	char	*port = NULL;
-	char	*llabel = NULL;
-	char	*home;
+	FILE		*hstlist;
+	struct host	*hst;
+	struct host	*hst_head;
+	char		line[MAXNAME*3];
+	int		i;
+	int 		linelen;
+	unsigned long	port = 0;
+	int		fnamelen;
+	char		*login = NULL;
+	char		*hostname = NULL;
+	char		*llabel = NULL;
+	char		*home;
 
 	if (fname == NULL) {
 		home = getenv("HOME");
@@ -127,7 +121,7 @@ host_readlist(char *fname)
 		return(NULL);
 	}
 
-	hst_head = hst = host_add(NULL, NULL, NULL, NULL);
+	hst_head = hst = host_add(NULL, NULL, NULL, 0);
 
 	while (fgets(line, sizeof(line), hstlist)) {
 		if (sscanf(line, "%[A-Za-z0-9-.@:%]", line) != 1) {
@@ -150,7 +144,6 @@ host_readlist(char *fname)
 		}
 
 		hostname = line;
-		port = NULL;
 		login = NULL;
 
 		for (i=0; i < linelen; i++) {
@@ -166,7 +159,8 @@ host_readlist(char *fname)
 					if (port)
 						break;
 					line[i] = '\0';
-					port = &line[i+1];
+					port = strtol(&line[i+1], (char **)NULL, 10);
+					if (port > 65535) port = 0;
 					break;
 				default:
 					break;
@@ -177,14 +171,6 @@ host_readlist(char *fname)
 			continue;
 
 		errno = 0;
-		if (port)
-			portn = (int)strtol(port, (char **)NULL, 10);
-
-		if (portn == 0)
-			port = NULL;
-
-		if (errno)
-			port = NULL;
 
 		if (!login)
 			login = user;
@@ -196,7 +182,7 @@ host_readlist(char *fname)
 		}
 
 		/* add the host record */
-		hst = host_add(hst, login, hostname, port?port:"22");
+		hst = host_add(hst, login, hostname, (uint16_t)port?(uint16_t)port:22);
 
 		if (hst == NULL)
 			return(NULL);

@@ -104,10 +104,11 @@ reap_child()
 void
 child()
 {
-	int	len_u, len_p;
-	char	*user_arg, *port_arg;
+	int	len_u;
+	char	*user_arg;
+	char	port_arg[8];
 	/* enough for : "-oStrictHostKeyChecking=" and a "yes" or "no" */
-	char	 hkc_arg[28];
+	char	hkc_arg[28];
 
 	pslot_ptr->pid = 0;
 
@@ -133,15 +134,8 @@ child()
 		exit(1);
 	}
 
-	/* space for -p and \0 */
-	len_p = strlen(pslot_ptr->hst->port) + 3;
-	port_arg = calloc(1, len_p);
-	if (port_arg == NULL) {
-		exit(1);
-	}
-
 	snprintf(user_arg, len_u, "-l%s", pslot_ptr->hst->user);
-	snprintf(port_arg, len_p, "-p%s", pslot_ptr->hst->port);
+	snprintf(port_arg, sizeof(port_arg), "-p%d", pslot_ptr->hst->port);
 	snprintf(hkc_arg,sizeof(hkc_arg), "-oStrictHostKeyChecking=%s",
 			hkey_check?"yes":"no");
 

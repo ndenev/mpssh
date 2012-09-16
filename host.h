@@ -30,8 +30,8 @@
 /* host list structs */
 struct
 host {
-	char	*user;
-	char    *host;
-	char	*port;
-	struct  host  *next;
+	char	    *user;
+	char        *host;
+	uint16_t     port;
+	struct host *next;
 };

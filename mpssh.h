@@ -27,6 +27,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <getopt.h>
 #include <sys/types.h>
@@ -44,6 +45,7 @@
 #define SSHPATH	"/usr/bin/ssh"
 #endif
 
+/* Default hosts filename, relative to users homedir */
 #define	HSTLIST ".mpssh/hosts"
 #define	MAXCMD  1024				/* max command len */
 #define	MAXUSER 30				/* max username len */
