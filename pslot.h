@@ -25,7 +25,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define LINEBUF 120	/* max output line len */
+#define LINEBUF 1024	/* max output line len */
 
 
 /* stdout/err structure for struct procslot */
