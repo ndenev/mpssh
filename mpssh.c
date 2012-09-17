@@ -32,23 +32,24 @@
 const char Ver[] = "HEAD";
 
 /* global vars */
-struct	procslot *ps = NULL;
-char	*cmd         = NULL;
-char	*user        = NULL;
-char	*fname       = NULL;
-char	*outdir      = NULL;
-char	*label       = NULL;
-int	children     = 0;
-int	maxchld      = 0;
-int	blind        = 0;
-int	done         = 0;
-int	hostcount    = 0;
-int	pslots       = 0;
-int	user_len_max = 0;
-int	host_len_max = 0;
-int	print_exit   = 0;
-int	hkey_check   = 1;
-int	verbose      = 0;
+struct	procslot *ps	= NULL;
+char	*cmd		= NULL;
+char	*user		= NULL;
+char	*fname		= NULL;
+char	*outdir		= NULL;
+char	*label		= NULL;
+int	 children	= 0;
+int	 maxchld	= 0;
+int	 blind		= 0;
+int	 done		= 0;
+int	 hostcount	= 0;
+int	 pslots		= 0;
+int	 user_len_max	= 0;
+int	 host_len_max	= 0;
+int	 print_exit	= 0;
+int	 ssh_hkey_check	= 1;
+int	 ssh_conn_tmout = 30;
+int	 verbose        = 0;
 sigset_t	sigmask;
 sigset_t	osigmask;
 
@@ -100,6 +101,7 @@ child()
 	char	port_arg[8];
 	/* enough for -oStrictHostKeyChecking=yes\0 */
 	char	hkc_arg[28];
+	char	tmo_arg[32];
 
 	ps->pid = 0;
 
@@ -128,12 +130,14 @@ child()
 	snprintf(user_arg, len_u, "-l%s", ps->hst->user);
 	snprintf(port_arg, sizeof(port_arg), "-p%d", ps->hst->port);
 	snprintf(hkc_arg,sizeof(hkc_arg), "-oStrictHostKeyChecking=%s",
-			hkey_check?"yes":"no");
+			ssh_hkey_check?"yes":"no");
+	snprintf(tmo_arg,sizeof(tmo_arg), "-oConnectTimeout=%d",
+			ssh_conn_tmout);
 
-	execl(SSHPATH, "ssh", "-q", hkc_arg, user_arg, port_arg,
+	execl(SSHPATH, "ssh", "-q", hkc_arg, tmo_arg, user_arg, port_arg,
 		ps->hst->host, cmd, NULL);
-	fprintf(stderr, "exec failed : %s %s %s %s %s %s\n",
-		SSHPATH, hkc_arg, user_arg,
+	fprintf(stderr, "exec failed : %s %s %s %s %s %s %s\n",
+		SSHPATH, hkc_arg, tmo_arg, user_arg,
 		port_arg, ps->hst->host, cmd);
 	exit(1);
 }
@@ -166,6 +170,7 @@ usage(char *msg)
 	       "  -b, --blind        enable blind mode (no remote output)\n"
 	       "  -o, --outdir=DIR   save the remote output in this directory\n"
 	       "  -s, --nokeychk     disable ssh strict host key check\n"
+	       "  -t, --conntmout    ssh connect timeout (default 30sec)\n"
 	       "  -v, --verbose      be more verbose and show progress\n"
 	       "  -V, --version      show program version\n"
 	       "\n");
@@ -188,15 +193,16 @@ parse_opts(int *argc, char ***argv)
 		{ "label",	required_argument,	NULL,		'l' },
 		{ "outdir",	required_argument,	NULL,		'o' },
 		{ "procs",	required_argument,	NULL,		'p' },
-		{ "user",	required_argument,	NULL,		'u' },
 		{ "nokeychk",	no_argument,		NULL,		's' },
+		{ "conntmout",	required_argument,	NULL,		't' },
+		{ "user",	required_argument,	NULL,		'u' },
 		{ "verbose",	no_argument,		NULL,		'v' },
 		{ "version",	no_argument,		NULL,		'V' },
 		{ NULL,		0,			NULL,		0},
 	};
 
 	while ((opt = getopt_long(*argc, *argv,
-				"bef:hl:o:p:u:svV", longopts, NULL)) != -1) {
+				"bef:hl:o:p:u:t:svV", longopts, NULL)) != -1) {
 		switch (opt) {
 			case 'b':
 				blind = 1;
@@ -230,7 +236,10 @@ parse_opts(int *argc, char ***argv)
 				if (maxchld > MAXCHLD) maxchld = MAXCHLD;
 				break;
 			case 's':
-				hkey_check = 0;
+				ssh_hkey_check = 0;
+				break;
+			case 't':
+				ssh_conn_tmout = (int)strtol(optarg,(char **)NULL,10);
 				break;
 			case 'u':
 				if (user)
@@ -306,7 +315,7 @@ main(int argc, char *argv[])
 	if (label)
 		printf("  [*] only on hosts labeled \"%s\"\n", label);
 
-	if (!hkey_check)
+	if (!ssh_hkey_check)
 		printf("  [*] strict host key check disabled\n");
 
 	if (blind)

@@ -228,7 +228,7 @@ pslot_printbuf(struct procslot *pslot, int outfd)
 		}
 		if (!blind) {
 			/* print to console */
-			fprintf(stream, "%*s @ %*s %s%s %s\n",
+			fprintf(stream, "[%*s @ %*s] %s%s %s\n",
 				user_len_max, pslot->hst->user,
 				host_len_max, pslot->hst->host,
 				progress,
@@ -250,7 +250,7 @@ pslot_printbuf(struct procslot *pslot, int outfd)
 			 * green if return code is zero and red if differs from zero
 			 * pfx_ret[isatty(fileno(stdout))?(pslot->ret?2:1):0]
 			 */
-			printf("%*s @ %*s %s%s %d\n",
+			printf("[%*s @ %*s] %s%s %d\n",
 				user_len_max, pslot->hst->user,
 				host_len_max, pslot->hst->host,
 				progress,
@@ -258,7 +258,7 @@ pslot_printbuf(struct procslot *pslot, int outfd)
 				pslot->ret);
 			fflush(stdout);
 		} else if (!pslot->used && !outdir && verbose) {
-			printf("%*s @ %*s %s\n",
+			printf("[%*s @ %*s] %s\n",
 				user_len_max, pslot->hst->user,
 				host_len_max, pslot->hst->host,
 				progress);
