@@ -58,7 +58,7 @@ procslot {
 };
 
 /* global process slot var */
-extern struct procslot *pslot_ptr;
+extern struct procslot *ps;
 
 /* other global vars */
 extern int pslots;

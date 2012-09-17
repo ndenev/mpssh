@@ -25,17 +25,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * mpssh - Mass Parallel Secure Shell. (c) 2012 Nikolay Denev
- *
- * This program reads list of machines from text file (one hostname at line)
- * and connects to all of the machines by creating upto N parallel ssh
- * sessions. Then it reads the output from each ssh session and prints it on
- * the screen prepending the machine name and the descriptor name (stdout/err).
- * The number of parallel sessions N, the filename of the list of machine
- * and the username to login as are user configurable.
- */
-
 #include "mpssh.h"
 #include "host.h"
 #include "pslot.h"
@@ -43,7 +32,7 @@
 const char Ver[] = "HEAD";
 
 /* global vars */
-struct	procslot	*pslot_ptr   = NULL;
+struct	procslot *ps = NULL;
 char	*cmd         = NULL;
 char	*user        = NULL;
 char	*fname       = NULL;
@@ -83,20 +72,21 @@ reap_child()
 
 	while ((pid = waitpid(-1, &ret, WNOHANG)) > 0) {
 		done++;
-		pslot_ptr = pslot_bypid(pslot_ptr, pid);
-		pslot_ptr->pid = 0;
-		pslot_ptr->ret = WEXITSTATUS(ret);
-		while (pslot_readbuf(pslot_ptr, OUT))
-			pslot_printbuf(pslot_ptr, OUT);
-		while (pslot_readbuf(pslot_ptr, ERR))
-			pslot_printbuf(pslot_ptr, ERR);
+		ps = pslot_bypid(ps, pid);
+		ps->pid = 0;
+		ps->ret = WEXITSTATUS(ret);
+		while (pslot_readbuf(ps, OUT))
+			pslot_printbuf(ps, OUT);
+		while (pslot_readbuf(ps, ERR))
+			pslot_printbuf(ps, ERR);
 		/*
 		 * make sure that we print some output in verbose mode
 		 * even if there is no data in the buffer
 		 */
-		pslot_printbuf(pslot_ptr, OUT);
-		pslot_ptr = pslot_del(pslot_ptr);
-		children--; /* decrement this last, its used in pslot_bypid */
+		pslot_printbuf(ps, OUT);
+		ps = pslot_del(ps);
+		/* decrement this last, its used in pslot_bypid */
+		children--;
 	}
 	return;
 }
@@ -106,44 +96,45 @@ child()
 {
 	int	len_u;
 	char	*user_arg;
+	/* enough for -p65535\0 */
 	char	port_arg[8];
-	/* enough for : "-oStrictHostKeyChecking=" and a "yes" or "no" */
+	/* enough for -oStrictHostKeyChecking=yes\0 */
 	char	hkc_arg[28];
 
-	pslot_ptr->pid = 0;
+	ps->pid = 0;
 
 	/* close stdin of the child, so it won't accept input */
 	close(0);
 
 	/* close the parent end of the pipes */
-	close(pslot_ptr->io.out[0]);
-	close(pslot_ptr->io.err[0]);
+	close(ps->io.out[0]);
+	close(ps->io.err[0]);
 
-	if (dup2(pslot_ptr->io.out[1], 1) == -1)
+	if (dup2(ps->io.out[1], 1) == -1)
 		fprintf(stderr, "stdout dup fail %s\n",
 			 strerror(errno));
 
-	if (dup2(pslot_ptr->io.err[1], 2) == -1)
+	if (dup2(ps->io.err[1], 2) == -1)
 		fprintf(stderr, "stderr dup fail %s\n",
 			 strerror(errno));
 
 	/* space for -l and \0 */
-	len_u = strlen(pslot_ptr->hst->user) + 3;
+	len_u = strlen(ps->hst->user) + 3;
 	user_arg = calloc(1, len_u);
 	if (user_arg == NULL) {
 		exit(1);
 	}
 
-	snprintf(user_arg, len_u, "-l%s", pslot_ptr->hst->user);
-	snprintf(port_arg, sizeof(port_arg), "-p%d", pslot_ptr->hst->port);
+	snprintf(user_arg, len_u, "-l%s", ps->hst->user);
+	snprintf(port_arg, sizeof(port_arg), "-p%d", ps->hst->port);
 	snprintf(hkc_arg,sizeof(hkc_arg), "-oStrictHostKeyChecking=%s",
 			hkey_check?"yes":"no");
 
 	execl(SSHPATH, "ssh", "-q", hkc_arg, user_arg, port_arg,
-		pslot_ptr->hst->host, cmd, NULL);
+		ps->hst->host, cmd, NULL);
 	fprintf(stderr, "exec failed : %s %s %s %s %s %s\n",
 		SSHPATH, hkc_arg, user_arg,
-		port_arg, pslot_ptr->hst->host, cmd);
+		port_arg, ps->hst->host, cmd);
 	exit(1);
 }
 
@@ -346,69 +337,89 @@ main(int argc, char *argv[])
 	while (hst || children) {
 		BLOCK_SIGCHLD;
 		if (hst && (children < maxchld)) {
-			pslot_ptr = pslot_add(pslot_ptr, 0, hst);
+			ps = pslot_add(ps, 0, hst);
 			/* output to file mode */
 			if (outdir) {
 				umask(022);
 				/*
-				 * alloc enough space for the string consisting of a directoryname, slash, username, @ sign,
-				 * hostname, a dot and a three letter file extension (out/err) and the terminating null char
+				 * alloc enough space for the string consisting
+				 * of a directoryname, slash, username, @ sign,
+				 * hostname, a dot and a three letter file
+				 * extension (out/err) and the terminating null
 				 */
-				i = strlen(outdir) + strlen("/") + strlen(pslot_ptr->hst->user) + strlen("@");
-				i += strlen(pslot_ptr->hst->host) + strlen(".ext") + 1;
+				i  = strlen(outdir);
+				i += strlen(ps->hst->user);
+				i += strlen(ps->hst->host);
+				i += 7;
 				/* setup the stdout output file */
-				pslot_ptr->outf[0].name = calloc(1, i);
-				if (!pslot_ptr->outf[0].name) {
-					fprintf(stderr, "unable to malloc memory for filename\n");
+				ps->outf[0].name = calloc(1, i);
+				if (!ps->outf[0].name) {
+					fprintf(stderr, "unable to malloc "
+						"memory for filename\n");
 					exit(1);
 				}
-				sprintf(pslot_ptr->outf[0].name, "%s/%s@%s.out", outdir, pslot_ptr->hst->user, pslot_ptr->hst->host);
-				pslot_ptr->outf[0].fh = fopen(pslot_ptr->outf[0].name, "w");
-				if (!pslot_ptr->outf[0].fh) {
-					fprintf(stderr, "unable to open : %s\n", pslot_ptr->outf[0].name);
+				sprintf(ps->outf[0].name,
+					"%s/%s@%s.out",
+					outdir,
+					ps->hst->user,
+					ps->hst->host);
+				ps->outf[0].fh = fopen(ps->outf[0].name, "w");
+				if (!ps->outf[0].fh) {
+					fprintf(stderr, "unable to open : "
+						"%s\n", ps->outf[0].name);
 					exit(1);
 				}
 				/* setup the stderr output file */
-				pslot_ptr->outf[1].name = calloc(1, i);
-				if (!pslot_ptr->outf[1].name) {
-					fprintf(stderr, "unable to malloc memory for filename\n");
+				ps->outf[1].name = calloc(1, i);
+				if (!ps->outf[1].name) {
+					fprintf(stderr, "unable to malloc "
+						"memory for filename\n");
 					exit(1);
 				}
-				sprintf(pslot_ptr->outf[1].name, "%s/%s@%s.err", outdir, pslot_ptr->hst->user, pslot_ptr->hst->host);
-				pslot_ptr->outf[1].fh = fopen(pslot_ptr->outf[1].name, "w");
-				if (!pslot_ptr->outf[1].fh) {
-					fprintf(stderr, "unable to open : %s\n", pslot_ptr->outf[1].name);
+				sprintf(ps->outf[1].name,
+					"%s/%s@%s.err",
+					outdir,
+					ps->hst->user,
+					ps->hst->host);
+				ps->outf[1].fh = fopen(ps->outf[1].name, "w");
+				if (!ps->outf[1].fh) {
+					fprintf(stderr, "unable to open : %s\n",
+						ps->outf[1].name);
 					exit(1);
 				}
 			} /* /blind or output to file mode */
 			switch (pid = fork()) {
+
 			case 0:
-				/* child, does not return */
-				child();
-				break;
+			/* child, does not return */
+			child();
+			break;
+
 			case -1:
-				/* error */
-				fprintf(stderr, "unable to fork: %s\n",
-					strerror(errno));
-				break;
+			/* error */
+			fprintf(stderr, "unable to fork: %s\n",
+				strerror(errno));
+			break;
+
 			default:
-				/* parent */
-				pslot_ptr->pid = pid;
-				/* close the child's end of the pipes */
-				close(pslot_ptr->io.out[1]);
-				close(pslot_ptr->io.err[1]);
-				children++;
-				break;
+			/* parent */
+			ps->pid = pid;
+			/* close the child's end of the pipes */
+			close(ps->io.out[1]);
+			close(ps->io.err[1]);
+			children++;
+			break;
+
 			}
 			hst = hst->next;
 		}
 		FD_ZERO(&readfds);
 		children_fds = children;
 		for (i=0; i <= children_fds; i++) {
-			FD_SET(pslot_ptr->io.out[0], &readfds);
-			FD_SET(pslot_ptr->io.err[0], &readfds);
-			if (pslot_ptr->next)
-				pslot_ptr = pslot_ptr->next;
+			FD_SET(ps->io.out[0], &readfds);
+			FD_SET(ps->io.err[0], &readfds);
+			if (ps->next)
+				ps = ps->next;
 		}
 		if (children == maxchld || !hst) {
 			timeout = NULL;
@@ -419,17 +430,17 @@ main(int argc, char *argv[])
 		UNBLOCK_SIGCHLD;
 		if (select(MAXFD , &readfds, NULL, NULL, timeout) > 0 ) {
 			BLOCK_SIGCHLD;
-			if (pslot_ptr) {
+			if (ps) {
 				for (i=0; i <= children_fds; i++) {
-					if (FD_ISSET(pslot_ptr->io.out[0], &readfds)) {
-						while (pslot_readbuf(pslot_ptr, OUT))
-							pslot_printbuf(pslot_ptr, OUT);
+					if (FD_ISSET(ps->io.out[0], &readfds)) {
+						while (pslot_readbuf(ps, OUT))
+							pslot_printbuf(ps, OUT);
 					}
-					if (FD_ISSET(pslot_ptr->io.err[0], &readfds)) {
-						while (pslot_readbuf(pslot_ptr, ERR))
-							pslot_printbuf(pslot_ptr, ERR);
+					if (FD_ISSET(ps->io.err[0], &readfds)) {
+						while (pslot_readbuf(ps, ERR))
+							pslot_printbuf(ps, ERR);
 					}
-					pslot_ptr = pslot_ptr->next;
+					ps = ps->next;
 				}
 			}
 			UNBLOCK_SIGCHLD;
