@@ -158,7 +158,8 @@ host_readlist(char *fname)
 					break;
 				case ':':
 					line[i] = '\0';
-					port = strtol(&line[i+1], (char **)NULL, 10);
+					port = strtol(&line[i+1],
+						(char **)NULL, 10);
 					break;
 				default:
 					break;
@@ -180,7 +181,8 @@ host_readlist(char *fname)
 		}
 
 		/* add the host record */
-		hst = host_add(hst, login, hostname, (uint16_t)port?(uint16_t)port:SSHDEFPORT);
+		hst = host_add(hst, login, hostname,
+				(uint16_t)port?(uint16_t)port:SSHDEFPORT);
 
 		port = 0;
 
