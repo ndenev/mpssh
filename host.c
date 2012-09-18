@@ -153,7 +153,8 @@ host_readlist(char *fname)
 					if (login)
 						break;
 					line[i] = '\0';
-					login = line;
+					if (strlen(line))
+						login = line;
 					hostname = &line[i+1];
 					break;
 				case ':':
