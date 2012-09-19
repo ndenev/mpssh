@@ -136,7 +136,7 @@ child()
 
 	execl(SSHPATH, "ssh", "-q", hkc_arg, tmo_arg, user_arg, port_arg,
 		ps->hst->host, cmd, NULL);
-	fprintf(stderr, "exec failed : %s %s %s %s %s %s %s\n",
+	fprintf(stderr, "exec failed : %s -q %s %s %s %s %s %s\n",
 		SSHPATH, hkc_arg, tmo_arg, user_arg,
 		port_arg, ps->hst->host, cmd);
 	exit(1);
@@ -159,23 +159,25 @@ show_ver()
 void
 usage(char *msg)
 {
-	printf("\n  Usage: mpssh [-u username] [-p numprocs] [-f hostlist]\n"
-	       "              [-e] [-b] [-o /some/dir] [-s] [-v] <command>\n\n"
-	       "  -h, --help         this screen\n"
-	       "  -u, --user=USER    ssh login as this username\n"
-	       "  -p, --procs=NPROC  number of parallel ssh processes\n"
-	       "  -f, --file=FILE    name of the file with the list of hosts\n"
-	       "  -l, --label=LABEL  connect only to hosts under label LABEL\n"
-	       "  -e, --exit         print the remote command return code\n"
-	       "  -b, --blind        enable blind mode (no remote output)\n"
-	       "  -o, --outdir=DIR   save the remote output in this directory\n"
-	       "  -s, --nokeychk     disable ssh strict host key check\n"
-	       "  -t, --conntmout    ssh connect timeout (default 30sec)\n"
-	       "  -v, --verbose      be more verbose and show progress\n"
-	       "  -V, --version      show program version\n"
-	       "\n");
-	if (msg)
-		printf("   *** %s\n\n", msg);
+	if (!msg) {
+		printf("\n  Usage: mpssh [-u username] [-p numprocs] [-f hostlist]\n"
+		       "              [-e] [-b] [-o /some/dir] [-s] [-v] <command>\n\n"
+		       "  -h, --help         this screen\n"
+		       "  -u, --user=USER    ssh login as this username\n"
+		       "  -p, --procs=NPROC  number of parallel ssh processes\n"
+		       "  -f, --file=FILE    name of the file with the list of hosts\n"
+		       "  -l, --label=LABEL  connect only to hosts under label LABEL\n"
+		       "  -e, --exit         print the remote command return code\n"
+		       "  -b, --blind        enable blind mode (no remote output)\n"
+		       "  -o, --outdir=DIR   save the remote output in this directory\n"
+		       "  -s, --nokeychk     disable ssh strict host key check\n"
+		       "  -t, --conntmout    ssh connect timeout (default 30sec)\n"
+		       "  -v, --verbose      be more verbose and show progress\n"
+		       "  -V, --version      show program version\n"
+		       "\n");
+	} else {
+		printf("\n   *** %s\n\n", msg);
+	}
 
 	exit(0);
 }
@@ -270,7 +272,7 @@ parse_opts(int *argc, char ***argv)
 	if (*argc > 1)
 		usage("too many arguments");
 	if (*argc < 1)
-		usage("command missing");
+		usage("command missing, use -h for help");
 
 	cmd = *argv[0];
 	if (strlen(cmd) > MAXCMD)
