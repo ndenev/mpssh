@@ -113,6 +113,9 @@ host_readlist(char *fname)
 		sprintf(fname, "%s/"HSTLIST, home);
 	}
 
+	if (verbose)
+		fprintf(stdout, "Reading hosts from : %s\n", fname);
+
 	hstlist = fopen(fname, "r");
 
 	if (hstlist == NULL) {
@@ -125,6 +128,7 @@ host_readlist(char *fname)
 
 	while (fgets(line, sizeof(line), hstlist)) {
 		if (sscanf(line, "%[A-Za-z0-9-.@:%]", line) != 1) {
+			printf("Ignoring line : %s\n", line);
 			continue;
 		}
 
@@ -161,13 +165,15 @@ host_readlist(char *fname)
 					line[i] = '\0';
 					port = strtol(&line[i+1],
 						(char **)NULL, 10);
+					if (port == 0)
+						continue;
 					break;
 				default:
 					break;
 			}
 		}
 
-		if (!hostname)
+		if ((hostname == NULL) || (strlen(hostname) == 0))
 			continue;
 
 		errno = 0;
@@ -194,7 +200,7 @@ host_readlist(char *fname)
 		if (login && strlen(login) > user_len_max)
 			user_len_max = strlen(login);
 
-		/* keep track of the longest line */
+		/* keep track of the longest hostname */
 		if (strlen(hostname) > host_len_max)
 			host_len_max = strlen(hostname);
 
