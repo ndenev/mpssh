@@ -66,6 +66,8 @@
 #define UNBLOCK_SIGCHLD							\
 	sigprocmask(SIG_SETMASK, &osigmask, NULL)
 
+#define perr(...) fprintf(stderr, __VA_ARGS__)
+
 /* some global vars */
 extern int maxchld;
 extern const char Rev[];

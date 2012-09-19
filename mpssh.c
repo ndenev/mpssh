@@ -113,11 +113,11 @@ child()
 	close(ps->io.err[0]);
 
 	if (dup2(ps->io.out[1], 1) == -1)
-		fprintf(stderr, "stdout dup fail %s\n",
+		perr("stdout dup fail %s\n",
 			 strerror(errno));
 
 	if (dup2(ps->io.err[1], 2) == -1)
-		fprintf(stderr, "stderr dup fail %s\n",
+		perr("stderr dup fail %s\n",
 			 strerror(errno));
 
 	/* space for -l and \0 */
@@ -136,7 +136,7 @@ child()
 
 	execl(SSHPATH, "ssh", "-q", hkc_arg, tmo_arg, user_arg, port_arg,
 		ps->hst->host, cmd, NULL);
-	fprintf(stderr, "exec failed : %s -q %s %s %s %s %s %s\n",
+	perr("exec failed : %s -q %s %s %s %s %s %s\n",
 		SSHPATH, hkc_arg, tmo_arg, user_arg,
 		port_arg, ps->hst->host, cmd);
 	exit(1);
@@ -308,7 +308,7 @@ main(int argc, char *argv[])
 	hst = host_readlist(fname);
 
 	if (hst == NULL) {
-		fprintf(stderr, "host list file empty, "
+		perr("host list file empty, "
 			"does not exist or no valid entries\n");
 		exit(1);
 	}
@@ -337,7 +337,7 @@ main(int argc, char *argv[])
 		} else {
 			printf("  [*] creating output directory : %s\n", outdir);
 			if (mkdir(outdir, 0755)) {
-				fprintf(stderr, "\n *** can't create output dir : ");
+				perr("\n *** can't create output dir : ");
 				perror(outdir);
 				exit(1);
 			}
@@ -370,7 +370,7 @@ main(int argc, char *argv[])
 				/* setup the stdout output file */
 				ps->outf[0].name = calloc(1, i);
 				if (!ps->outf[0].name) {
-					fprintf(stderr, "unable to malloc "
+					perr("unable to malloc "
 						"memory for filename\n");
 					exit(1);
 				}
@@ -381,14 +381,14 @@ main(int argc, char *argv[])
 					ps->hst->host);
 				ps->outf[0].fh = fopen(ps->outf[0].name, "w");
 				if (!ps->outf[0].fh) {
-					fprintf(stderr, "unable to open : "
+					perr("unable to open : "
 						"%s\n", ps->outf[0].name);
 					exit(1);
 				}
 				/* setup the stderr output file */
 				ps->outf[1].name = calloc(1, i);
 				if (!ps->outf[1].name) {
-					fprintf(stderr, "unable to malloc "
+					perr("unable to malloc "
 						"memory for filename\n");
 					exit(1);
 				}
@@ -399,7 +399,7 @@ main(int argc, char *argv[])
 					ps->hst->host);
 				ps->outf[1].fh = fopen(ps->outf[1].name, "w");
 				if (!ps->outf[1].fh) {
-					fprintf(stderr, "unable to open : %s\n",
+					perr("unable to open : %s\n",
 						ps->outf[1].name);
 					exit(1);
 				}
@@ -413,7 +413,7 @@ main(int argc, char *argv[])
 
 			case -1:
 			/* error */
-			fprintf(stderr, "unable to fork: %s\n",
+			perr("unable to fork: %s\n",
 				strerror(errno));
 			break;
 

@@ -60,7 +60,7 @@ host_new(char *user, char *host, uint16_t port)
 
 	return(hst);
 fail:
-	fprintf(stderr, "Can't alloc mem in %s\n", __func__);
+	perr("Can't alloc mem in %s\n", __func__);
 	exit(1);
 }
 
@@ -101,7 +101,7 @@ host_readlist(char *fname)
 	if (fname == NULL) {
 		home = getenv("HOME");
 		if (!home) {
-			fprintf(stderr, "Can't get HOME env var in %s\n", __func__);
+			perr("Can't get HOME env var in %s\n", __func__);
 			exit(1);
 		}
 
@@ -110,7 +110,7 @@ host_readlist(char *fname)
 		fname = calloc(1, fnamelen);
 
 		if (!fname) {
-			fprintf(stderr, "Can't alloc mem in %s\n", __func__);
+			perr("Can't alloc mem in %s\n", __func__);
 			exit(1);
 		}
 
@@ -123,7 +123,7 @@ host_readlist(char *fname)
 	hstlist = fopen(fname, "r");
 
 	if (hstlist == NULL) {
-		fprintf(stderr, "Can't open file: %s (%s) in %s\n",
+		perr("Can't open file: %s (%s) in %s\n",
 			fname, strerror(errno), __func__);
 		exit(1);
 	}
@@ -131,7 +131,7 @@ host_readlist(char *fname)
 	hst_head = hst = host_add(NULL, NULL, NULL, 0);
 
 	if (hst_head == NULL) {
-		fprintf(stderr, "Unable to add host structure head in %s\n", __func__);
+		perr("Unable to add host structure head in %s\n", __func__);
 		exit(1);
 	}
 
@@ -148,7 +148,7 @@ host_readlist(char *fname)
 				free(llabel);
 			llabel = calloc(1, linelen + 1);
 			if (llabel == NULL) {
-				fprintf(stderr, "Can't alloc mem in %s\n", __func__);
+				perr("Can't alloc mem in %s\n", __func__);
 				exit(1);
 			}
 			strncpy(llabel, &line[1], linelen);
@@ -203,7 +203,7 @@ host_readlist(char *fname)
 		hst = host_add(hst, login, hostname, (uint16_t)port);
 
 		if (hst == NULL) {
-			fprintf(stderr, "Unable to add member to "
+			perr("Unable to add member to "
 				"the host struct in %s\n", __func__);
 			exit(1);
 		}

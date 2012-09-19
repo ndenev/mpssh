@@ -38,8 +38,7 @@ pslot_new(int pid, struct host *hst)
 	struct procslot *pslot_tmp;
 	pslot_tmp = calloc(1, sizeof(struct procslot));
 	if (pslot_tmp == NULL) {
-		fprintf(stderr, "%s\n",
-			strerror(errno));
+		perr("%s\n", strerror(errno));
 		exit(1);
 	}
 	pslot_tmp->pid = pid;
