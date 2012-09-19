@@ -172,7 +172,7 @@ pslot_readbuf(struct procslot *pslot, int outfd)
 
 	for (;;) {
 		i = read(fd, &buf, sizeof(buf));
-		if (i == 0) return 0; 
+		if (i == 0) return 0;
 		if (i < 0) {
 			if (errno == EINTR) continue;
 			return 0;
