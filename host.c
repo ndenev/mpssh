@@ -60,8 +60,8 @@ host_new(char *user, char *host, uint16_t port)
 
 	return(hst);
 fail:
-	fprintf(stderr, "%s\n", strerror(errno));
-	return(NULL);
+	fprintf(stderr, "Can't alloc mem in %s\n", __func__);
+	exit(1);
 }
 
 /*
@@ -100,15 +100,19 @@ host_readlist(char *fname)
 
 	if (fname == NULL) {
 		home = getenv("HOME");
-		if (!home)
-			return(NULL);
+		if (!home) {
+			fprintf(stderr, "Can't get HOME env var in %s\n", __func__);
+			exit(1);
+		}
 
 		fnamelen = strlen(home) + strlen("/"HSTLIST) + 1;
 
 		fname = calloc(1, fnamelen);
 
-		if (!fname)
-			return(NULL);
+		if (!fname) {
+			fprintf(stderr, "Can't alloc mem in %s\n", __func__);
+			exit(1);
+		}
 
 		sprintf(fname, "%s/"HSTLIST, home);
 	}
@@ -119,12 +123,17 @@ host_readlist(char *fname)
 	hstlist = fopen(fname, "r");
 
 	if (hstlist == NULL) {
-		fprintf(stderr, "Can't open file: %s (%s)\n",
-			fname, strerror(errno));
-		return(NULL);
+		fprintf(stderr, "Can't open file: %s (%s) in %s\n",
+			fname, strerror(errno), __func__);
+		exit(1);
 	}
 
 	hst_head = hst = host_add(NULL, NULL, NULL, 0);
+
+	if (hst_head == NULL) {
+		fprintf(stderr, "Unable to add host structure head in %s\n", __func__);
+		exit(1);
+	}
 
 	while (fgets(line, sizeof(line), hstlist)) {
 		if (sscanf(line, "%[A-Za-z0-9-.@:%]", line) != 1) {
@@ -139,9 +148,8 @@ host_readlist(char *fname)
 				free(llabel);
 			llabel = calloc(1, linelen + 1);
 			if (llabel == NULL) {
-				fprintf(stderr, "%s\n", strerror(errno));
-				free(llabel);
-				return(NULL);
+				fprintf(stderr, "Can't alloc mem in %s\n", __func__);
+				exit(1);
 			}
 			strncpy(llabel, &line[1], linelen);
 			continue;
@@ -149,7 +157,7 @@ host_readlist(char *fname)
 
 		hostname = line;
 		login = NULL;
-		port = 0;
+		port = SSHDEFPORT;
 
 		for (i=0; i < linelen; i++) {
 			switch (line[i]) {
@@ -157,16 +165,17 @@ host_readlist(char *fname)
 					if (login)
 						break;
 					line[i] = '\0';
-					if (strlen(line))
+					if (strlen(line)) {
 						login = line;
+					} else {
+						break;
+					}
 					hostname = &line[i+1];
 					break;
 				case ':':
 					line[i] = '\0';
 					port = strtol(&line[i+1],
 						(char **)NULL, 10);
-					if (port == 0)
-						continue;
 					break;
 				default:
 					break;
@@ -187,14 +196,17 @@ host_readlist(char *fname)
 				continue;
 		}
 
+		if (port == 0)
+			continue;
+
 		/* add the host record */
-		hst = host_add(hst, login, hostname,
-				(uint16_t)port?(uint16_t)port:SSHDEFPORT);
+		hst = host_add(hst, login, hostname, (uint16_t)port);
 
-		port = 0;
-
-		if (hst == NULL)
-			return(NULL);
+		if (hst == NULL) {
+			fprintf(stderr, "Unable to add member to "
+				"the host struct in %s\n", __func__);
+			exit(1);
+		}
 
 		/* keep track of the longest username */
 		if (login && strlen(login) > user_len_max)

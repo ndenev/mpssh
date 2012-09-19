@@ -305,8 +305,13 @@ main(int argc, char *argv[])
 	if (blind && !outdir)
 		usage("can't use blind mode without outdir");
 
-	if (!(hst = host_readlist(fname)))
-		usage("problem with file");
+	hst = host_readlist(fname);
+
+	if (hst == NULL) {
+		fprintf(stderr, "host list file empty, "
+			"does not exist or no valid entries\n");
+		exit(1);
+	}
 
 	printf( "MPSSH - Mass Parallel Ssh Ver.%s\n"
 		"(c)2005-2012 Nikolay Denev <ndenev@gmail.com>\n\n"
@@ -332,7 +337,7 @@ main(int argc, char *argv[])
 		} else {
 			printf("  [*] creating output directory : %s\n", outdir);
 			if (mkdir(outdir, 0755)) {
-				printf("\n *** can't create output dir : ");
+				fprintf(stderr, "\n *** can't create output dir : ");
 				perror(outdir);
 				exit(1);
 			}
