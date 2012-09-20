@@ -41,14 +41,18 @@ host_new(char *user, char *host, uint16_t port)
 	if (!(hst = calloc(1, sizeof(struct host)))) goto fail;
 
 	if (user) {
-		if (!(hst->user = calloc(1, strlen(user)+1))) goto fail;
+		hst->user = calloc(1, strlen(user)+1);
+		if (hst->user == NULL)
+			goto fail;
 		strncpy(hst->user, user, strlen(user));
 	} else {
 		hst->user = NULL;
 	}
 
 	if (host) {
-		if (!(hst->host = calloc(1, strlen(host)+1))) goto fail;
+		hst->host = calloc(1, strlen(host)+1);
+		if (hst->host == NULL)
+			goto fail;
 		strncpy(hst->host, host, strlen(host));
 	} else {
 		hst->host = NULL;
@@ -143,6 +147,7 @@ host_readlist(char *fname)
 
 		linelen = strlen(line);
 
+		/* label support */
 		if (line[0] == '%') {
 			if (llabel)
 				free(llabel);
@@ -159,17 +164,17 @@ host_readlist(char *fname)
 		login = NULL;
 		port = SSHDEFPORT;
 
+		/* XXX: This is ugly */
 		for (i=0; i < linelen; i++) {
 			switch (line[i]) {
 				case '@':
 					if (login)
 						break;
 					line[i] = '\0';
-					if (strlen(line)) {
+					if (strlen(line))
 						login = line;
-					} else {
+					else
 						break;
-					}
 					hostname = &line[i+1];
 					break;
 				case ':':
@@ -218,11 +223,18 @@ host_readlist(char *fname)
 
 		hostcount++;
 	}
+
 	if (llabel)
 		free(llabel);
+
 	fclose(hstlist);
-	if (maxchld > hostcount) maxchld = hostcount;
+
+	if (maxchld > hostcount)
+		maxchld = hostcount;
+
 	hst = hst_head->next;
+
 	free(hst_head);
+
 	return(hst);
 }
