@@ -405,27 +405,23 @@ main(int argc, char *argv[])
 				}
 			} /* /blind or output to file mode */
 			switch (pid = fork()) {
-
 			case 0:
-			/* child, does not return */
-			child();
-			break;
-
+				/* child, does not return */
+				child();
+				break;
 			case -1:
-			/* error */
-			perr("unable to fork: %s\n",
-				strerror(errno));
-			break;
-
+				/* error */
+				perr("unable to fork: %s\n",
+					strerror(errno));
+				break;
 			default:
-			/* parent */
-			ps->pid = pid;
-			/* close the child's end of the pipes */
-			close(ps->io.out[1]);
-			close(ps->io.err[1]);
-			children++;
-			break;
-
+				/* parent */
+				ps->pid = pid;
+				/* close the child's end of the pipes */
+				close(ps->io.out[1]);
+				close(ps->io.err[1]);
+				children++;
+				break;
 			}
 			hst = hst->next;
 		}
