@@ -42,6 +42,7 @@ int	 children	= 0;
 int	 maxchld	= 0;
 int	 blind		= 0;
 int	 done		= 0;
+int	 delay		= 0;
 int	 hostcount	= 0;
 int	 pslots		= 0;
 int	 user_len_max	= 0;
@@ -160,21 +161,22 @@ void
 usage(char *msg)
 {
 	if (!msg) {
-		printf("\n  Usage: mpssh [-u username] [-p numprocs] [-f hostlist]\n"
-		       "              [-e] [-b] [-o /some/dir] [-s] [-v] <command>\n\n"
-		       "  -h, --help         this screen\n"
-		       "  -u, --user=USER    ssh login as this username\n"
-		       "  -p, --procs=NPROC  number of parallel ssh processes\n"
-		       "  -f, --file=FILE    name of the file with the list of hosts\n"
-		       "  -l, --label=LABEL  connect only to hosts under label LABEL\n"
-		       "  -e, --exit         print the remote command return code\n"
-		       "  -b, --blind        enable blind mode (no remote output)\n"
-		       "  -o, --outdir=DIR   save the remote output in this directory\n"
-		       "  -s, --nokeychk     disable ssh strict host key check\n"
-		       "  -t, --conntmout    ssh connect timeout (default 30sec)\n"
-		       "  -v, --verbose      be more verbose and show progress\n"
-		       "  -V, --version      show program version\n"
-		       "\n");
+	    printf("\n Usage: mpssh [-u username] [-p numprocs] [-f hostlist]\n"
+		"              [-e] [-b] [-o /some/dir] [-s] [-v] <command>\n\n"
+		"  -b, --blind       Enable blind mode (no remote output)\n"
+		"  -d, --delay       Delay between weach ssh fork in milisecs\n"
+		"  -e, --exit        Print the remote command return code\n"
+		"  -f, --file=FILE   Name of the file with the list of hosts\n"
+		"  -h, --help        This screen\n"
+		"  -l, --label=LABEL Connect only to hosts under label LABEL\n"
+		"  -o, --outdir=DIR  Save the remote output in this directory\n"
+		"  -p, --procs=NPROC Number of parallel ssh processes\n"
+		"  -s, --nokeychk    Disable ssh strict host key check\n"
+		"  -t, --conntmout   Ssh connect timeout (default 30sec)\n"
+		"  -u, --user=USER   Ssh login as this username\n"
+		"  -v, --verbose     Be more verbose and show progress\n"
+		"  -V, --version     Show program version\n"
+		"\n");
 	} else {
 		printf("\n   *** %s\n\n", msg);
 	}
@@ -204,12 +206,18 @@ parse_opts(int *argc, char ***argv)
 	};
 
 	while ((opt = getopt_long(*argc, *argv,
-				"bef:hl:o:p:u:t:svV", longopts, NULL)) != -1) {
+				"bd:ef:hl:o:p:u:t:svV", longopts, NULL)) != -1) {
 		switch (opt) {
 			case 'b':
 				blind = 1;
 				if (print_exit)
 					usage("-b is not compatible with -e");
+				break;
+			case 'd':
+				delay = (int)strtol(optarg,(char **)NULL,10);
+				if (delay == 0 && errno == EINVAL)
+					usage("invalid delay value");
+				if (delay < 0) usage("delay can't be negative");
 				break;
 			case 'e':
 				print_exit = 1;
@@ -404,6 +412,8 @@ main(int argc, char *argv[])
 					exit(1);
 				}
 			} /* /blind or output to file mode */
+			if (delay)
+				usleep(delay * 1000);
 			switch (pid = fork()) {
 			case 0:
 				/* child, does not return */
