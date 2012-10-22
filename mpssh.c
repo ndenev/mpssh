@@ -412,8 +412,6 @@ main(int argc, char *argv[])
 					exit(1);
 				}
 			} /* /blind or output to file mode */
-			if (delay)
-				usleep(delay * 1000);
 			switch (pid = fork()) {
 			case 0:
 				/* child, does not return */
@@ -433,6 +431,10 @@ main(int argc, char *argv[])
 				children++;
 				break;
 			}
+			/* delay between each sshd fork */
+			if (delay)
+				usleep(delay * 1000);
+
 			hst = hst->next;
 		}
 		FD_ZERO(&readfds);
