@@ -65,6 +65,14 @@ host_new(char *user, char *host, uint16_t port)
 	return(hst);
 fail:
 	perr("Can't alloc mem in %s\n", __func__);
+
+	if (hst->user != NULL)
+		free(hst->user);
+	if (hst->host != NULL)
+		free(hst->host);
+	if (hst != NULL)
+		free(hst);
+	
 	exit(1);
 }
 
