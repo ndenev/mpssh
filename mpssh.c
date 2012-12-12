@@ -165,7 +165,7 @@ usage(char *msg)
 	    printf("\n Usage: mpssh [-u username] [-p numprocs] [-f hostlist]\n"
 		"              [-e] [-b] [-o /some/dir] [-s] [-v] <command>\n\n"
 		"  -b, --blind       Enable blind mode (no remote output)\n"
-		"  -d, --delay       Delay between weach ssh fork in milisecs\n"
+		"  -d, --delay       Delay between each ssh fork in milisecs\n"
 		"  -e, --exit        Print the remote command return code\n"
 		"  -f, --file=FILE   Name of the file with the list of hosts\n"
 		"  -h, --help        This screen\n"
