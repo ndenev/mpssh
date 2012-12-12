@@ -238,3 +238,27 @@ host_readlist(char *fname)
 
 	return(hst);
 }
+
+void
+host_free(struct host *hst)
+{
+	struct host *next = NULL;
+
+	if (hst == NULL)
+		return;
+
+	next = hst;
+
+	while (next != NULL) {
+		hst = hst->next;
+		
+		if (next->host != NULL)
+			free(next->host);
+		if (next->user != NULL)
+			free(next->user);
+
+		free(next);
+		next = hst;
+	}
+}
+	   
