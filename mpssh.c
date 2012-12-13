@@ -56,6 +56,7 @@ sigset_t	osigmask;
 
 /* function declarations */
 struct	host		*host_readlist(char *);
+void			host_free(struct host *);
 struct	procslot	*pslot_add(struct procslot *, int, struct host *);
 struct	procslot	*pslot_del(struct procslot *);
 struct	procslot	*pslot_bypid(struct procslot *, int);
@@ -164,7 +165,7 @@ usage(char *msg)
 	    printf("\n Usage: mpssh [-u username] [-p numprocs] [-f hostlist]\n"
 		"              [-e] [-b] [-o /some/dir] [-s] [-v] <command>\n\n"
 		"  -b, --blind       Enable blind mode (no remote output)\n"
-		"  -d, --delay       Delay between weach ssh fork in milisecs\n"
+		"  -d, --delay       Delay between each ssh fork in milisecs\n"
 		"  -e, --exit        Print the remote command return code\n"
 		"  -f, --file=FILE   Name of the file with the list of hosts\n"
 		"  -h, --help        This screen\n"
@@ -295,7 +296,7 @@ parse_opts(int *argc, char ***argv)
 int
 main(int argc, char *argv[])
 {
-	struct	host	*hst;
+	struct	host	*hst, *tofree;
 	int	i, pid;
 	fd_set	readfds;
 	int	children_fds;
@@ -320,6 +321,8 @@ main(int argc, char *argv[])
 			"does not exist or no valid entries\n");
 		exit(1);
 	}
+
+	tofree = hst;
 
 	printf( "MPSSH - Mass Parallel Ssh Ver.%s\n"
 		"(c)2005-2012 Nikolay Denev <ndenev@gmail.com>\n\n"
@@ -471,6 +474,8 @@ main(int argc, char *argv[])
 		}
 	}
 	printf("\n  Done. %d hosts processed.\n", done);
+
+	host_free(tofree);
 
 	return(0);
 }

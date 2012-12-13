@@ -65,6 +65,14 @@ host_new(char *user, char *host, uint16_t port)
 	return(hst);
 fail:
 	perr("Can't alloc mem in %s\n", __func__);
+
+	if (hst->user != NULL)
+		free(hst->user);
+	if (hst->host != NULL)
+		free(hst->host);
+	if (hst != NULL)
+		free(hst);
+	
 	exit(1);
 }
 
@@ -238,3 +246,27 @@ host_readlist(char *fname)
 
 	return(hst);
 }
+
+void
+host_free(struct host *hst)
+{
+	struct host *next = NULL;
+
+	if (hst == NULL)
+		return;
+
+	next = hst;
+
+	while (next != NULL) {
+		hst = hst->next;
+		
+		if (next->host != NULL)
+			free(next->host);
+		if (next->user != NULL)
+			free(next->user);
+
+		free(next);
+		next = hst;
+	}
+}
+	   
