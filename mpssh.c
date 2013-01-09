@@ -291,6 +291,58 @@ parse_opts(int *argc, char ***argv)
 }
 
 /*
+ * Routine to handle stdout and stderr
+ * output file creation and opening
+ * when output to file mode is enabled.
+ */
+int
+setupoutdirfiles(struct procslot *p)
+{
+	int i;
+
+	/*
+	 * alloc enough space for the string consisting
+	 * of a directoryname, slash, username, @ sign,
+	 * hostname, a dot and a three letter file
+	 * extension (out/err) and the terminating null
+	 */
+	i  = strlen(outdir);
+	i += strlen(p->hst->user);
+	i += strlen(p->hst->host);
+	i += 7;
+
+	/* setup the stdout output file */
+	p->outf[0].name = calloc(1, i);
+	if (!p->outf[0].name) {
+		perr("unable to malloc memory for filename\n");
+		return(1);
+	}
+	sprintf(p->outf[0].name, "%s/%s@%s.out",
+		outdir, p->hst->user, p->hst->host);
+	p->outf[0].fh = fopen(p->outf[0].name, "w");
+	if (!p->outf[0].fh) {
+		perr("unable to open : %s\n", p->outf[0].name);
+		return(1);
+	}
+
+	/* setup the stderr output file */
+	p->outf[1].name = calloc(1, i);
+	if (!p->outf[1].name) {
+		perr("unable to malloc memory for filename\n");
+		return(1);
+	}
+	sprintf(p->outf[1].name, "%s/%s@%s.err",
+		outdir, p->hst->user, p->hst->host);
+
+	p->outf[1].fh = fopen(p->outf[1].name, "w");
+	if (!p->outf[1].fh) {
+		perr("unable to open : %s\n", p->outf[1].name);
+		return(1);
+	}
+	return(0);
+}
+
+/*
  * Main routine
  */
 int
@@ -368,55 +420,8 @@ main(int argc, char *argv[])
 		BLOCK_SIGCHLD;
 		if (hst && (children < maxchld)) {
 			ps = pslot_add(ps, 0, hst);
-			/* output to file mode */
-			if (outdir) {
-				/*
-				 * alloc enough space for the string consisting
-				 * of a directoryname, slash, username, @ sign,
-				 * hostname, a dot and a three letter file
-				 * extension (out/err) and the terminating null
-				 */
-				i  = strlen(outdir);
-				i += strlen(ps->hst->user);
-				i += strlen(ps->hst->host);
-				i += 7;
-				/* setup the stdout output file */
-				ps->outf[0].name = calloc(1, i);
-				if (!ps->outf[0].name) {
-					perr("unable to malloc "
-						"memory for filename\n");
-					exit(1);
-				}
-				sprintf(ps->outf[0].name,
-					"%s/%s@%s.out",
-					outdir,
-					ps->hst->user,
-					ps->hst->host);
-				ps->outf[0].fh = fopen(ps->outf[0].name, "w");
-				if (!ps->outf[0].fh) {
-					perr("unable to open : "
-						"%s\n", ps->outf[0].name);
-					exit(1);
-				}
-				/* setup the stderr output file */
-				ps->outf[1].name = calloc(1, i);
-				if (!ps->outf[1].name) {
-					perr("unable to malloc "
-						"memory for filename\n");
-					exit(1);
-				}
-				sprintf(ps->outf[1].name,
-					"%s/%s@%s.err",
-					outdir,
-					ps->hst->user,
-					ps->hst->host);
-				ps->outf[1].fh = fopen(ps->outf[1].name, "w");
-				if (!ps->outf[1].fh) {
-					perr("unable to open : %s\n",
-						ps->outf[1].name);
-					exit(1);
-				}
-			} /* /blind or output to file mode */
+			if (outdir)
+				setupoutdirfiles(ps);
 			switch (pid = fork()) {
 			case 0:
 				/* child, does not return */
