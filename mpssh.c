@@ -55,13 +55,13 @@ sigset_t	sigmask;
 sigset_t	osigmask;
 
 /* function declarations */
-struct	host		*host_readlist(char *);
-void			host_free(struct host *);
-struct	procslot	*pslot_add(struct procslot *, int, struct host *);
-struct	procslot	*pslot_del(struct procslot *);
-struct	procslot	*pslot_bypid(struct procslot *, int);
-void			pslot_printbuf(struct procslot *, int);
-int			pslot_readbuf(struct procslot *, int);
+struct	host	 *host_readlist(char *);
+void		  host_free(struct host *);
+struct	procslot *pslot_add(struct procslot *, int, struct host *);
+struct	procslot *pslot_del(struct procslot *);
+struct	procslot *pslot_bypid(struct procslot *, int);
+void		  pslot_printbuf(struct procslot *, int);
+int		  pslot_readbuf(struct procslot *, int);
 
 /*
  * child reaping routine. it is installed as signal

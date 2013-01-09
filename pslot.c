@@ -36,6 +36,7 @@ struct procslot*
 pslot_new(int pid, struct host *hst)
 {
 	struct procslot *pslot_tmp;
+
 	pslot_tmp = calloc(1, sizeof(struct procslot));
 	if (pslot_tmp == NULL) {
 		perr("%s\n", strerror(errno));
@@ -43,10 +44,10 @@ pslot_new(int pid, struct host *hst)
 	}
 	pslot_tmp->pid = pid;
 	pslot_tmp->hst = hst;
-	pslot_tmp->outf[0].name = NULL;
-	pslot_tmp->outf[0].fh	 = NULL;
-	pslot_tmp->outf[1].name = NULL;
-	pslot_tmp->outf[1].fh	 = NULL;
+	pslot_tmp->outf[0].name	= NULL;
+	pslot_tmp->outf[0].fh	= NULL;
+	pslot_tmp->outf[1].name	= NULL;
+	pslot_tmp->outf[1].fh	= NULL;
 	pslot_tmp->used = 0;
 	pipe(pslot_tmp->io.out);
 	pipe(pslot_tmp->io.err);
@@ -64,7 +65,9 @@ struct procslot*
 pslot_add(struct procslot *pslot, int pid, struct host *hst)
 {
 	struct procslot *pslot_tmp;
-	if (!pslot) { /* first entry special case */
+
+	if (!pslot) {
+		/* first entry special case */
 		pslot = pslot_new(pid, hst);
 		pslot->prev = pslot;
 		pslot->next = pslot;
@@ -89,7 +92,8 @@ struct procslot*
 pslot_del(struct procslot *pslot)
 {
 	struct procslot *pslot_todel;
-	int	is_last = 0;
+	int    is_last = 0;
+
 	if (!pslot) return(NULL);
 
 	if (pslot == pslot->next)
@@ -142,6 +146,7 @@ struct procslot*
 pslot_bypid(struct procslot *pslot, int pid)
 {
 	int i;
+
 	for (i=0; i <= children; i++) {
 		if (pslot->pid == pid)
 			return(pslot);
