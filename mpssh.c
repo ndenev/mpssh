@@ -361,13 +361,15 @@ main(int argc, char *argv[])
 	/* install the signal handler for SIGCHLD */
 	signal(SIGCHLD, reap_child);
 
+	if (outdir)
+		umask(022);
+
 	while (hst || children) {
 		BLOCK_SIGCHLD;
 		if (hst && (children < maxchld)) {
 			ps = pslot_add(ps, 0, hst);
 			/* output to file mode */
 			if (outdir) {
-				umask(022);
 				/*
 				 * alloc enough space for the string consisting
 				 * of a directoryname, slash, username, @ sign,
