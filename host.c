@@ -72,7 +72,7 @@ fail:
 		free(hst->host);
 	if (hst != NULL)
 		free(hst);
-	
+
 	exit(1);
 }
 
@@ -259,7 +259,7 @@ host_free(struct host *hst)
 
 	while (next != NULL) {
 		hst = hst->next;
-		
+
 		if (next->host != NULL)
 			free(next->host);
 		if (next->user != NULL)
@@ -269,4 +269,3 @@ host_free(struct host *hst)
 		next = hst;
 	}
 }
-	   
