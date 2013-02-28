@@ -165,19 +165,19 @@ usage(char *msg)
 	    printf("\n Usage: mpssh [-u username] [-p numprocs] [-f hostlist]\n"
 		"              [-e] [-b] [-o /some/dir] [-s] [-v] <command>\n\n"
 		"  -b, --blind       Enable blind mode (no remote output)\n"
-		"  -d, --delay       Delay between each ssh fork in milisecs\n"
+		"  -d, --delay       Delay between each ssh fork (default %d msec)\n"
 		"  -e, --exit        Print the remote command return code\n"
 		"  -f, --file=FILE   Name of the file with the list of hosts\n"
 		"  -h, --help        This screen\n"
 		"  -l, --label=LABEL Connect only to hosts under label LABEL\n"
 		"  -o, --outdir=DIR  Save the remote output in this directory\n"
-		"  -p, --procs=NPROC Number of parallel ssh processes\n"
+		"  -p, --procs=NPROC Number of parallel ssh processes (default %d)\n"
 		"  -s, --nokeychk    Disable ssh strict host key check\n"
-		"  -t, --conntmout   Ssh connect timeout (default 30sec)\n"
+		"  -t, --conntmout   Ssh connect timeout (default %d sec)\n"
 		"  -u, --user=USER   Ssh login as this username\n"
 		"  -v, --verbose     Be more verbose and show progress\n"
 		"  -V, --version     Show program version\n"
-		"\n");
+		"\n", delay, DEFCHLD, ssh_conn_tmout);
 	} else {
 		printf("\n   *** %s\n\n", msg);
 	}
