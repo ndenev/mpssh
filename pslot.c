@@ -248,6 +248,13 @@ pslot_printbuf(struct procslot *pslot, int outfd)
 	 * because we want it printed only once
 	 */
 	} else if (!pslot->pid && (outfd == OUT)) {
+		if (pslot->ret == 255) {
+			printf("[%*s @ %*s] ssh failure\n",
+				user_len_max, pslot->hst->user,
+				host_len_max, pslot->hst->host);
+			fflush(stdout);
+			return;
+		}
 		if (print_exit) {
 			/*
 			 * print exit code prefix "=:", bw if we are not on a tty, 
@@ -266,11 +273,6 @@ pslot_printbuf(struct procslot *pslot, int outfd)
 				user_len_max, pslot->hst->user,
 				host_len_max, pslot->hst->host,
 				progress);
-		}
-		if (pslot->ret == 255) {
-			printf("[%*s @ %*s] ssh failure\n",
-				user_len_max, pslot->hst->user,
-				host_len_max, pslot->hst->host);
 		}
 	}
 
