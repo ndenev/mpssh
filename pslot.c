@@ -232,12 +232,19 @@ pslot_printbuf(struct procslot *pslot, int outfd)
 		}
 		if (!blind) {
 			/* print to console */
-			fprintf(stream, "%*s@%*s %s%s %s\n",
-				user_len_max, pslot->hst->user,
-				host_len_max, pslot->hst->host,
-				progress,
-				stream_pfx[isatty(fileno(stream))+1],
-				bufp);
+			if (verbose) {
+				fprintf(stream, "%*s@%*s %s%s %s\n",
+					user_len_max, pslot->hst->user,
+					host_len_max, pslot->hst->host,
+					progress,
+					stream_pfx[isatty(fileno(stream))+1],
+					bufp);
+			} else {
+				fprintf(stream, "%*s %s %s\n",
+					host_len_max, pslot->hst->host,
+					stream_pfx[isatty(fileno(stream))+1],
+					bufp);
+			}
 			fflush(stream);
 			pslot->used++;
 		}
@@ -249,10 +256,16 @@ pslot_printbuf(struct procslot *pslot, int outfd)
 	 */
 	} else if (!pslot->pid && (outfd == OUT)) {
 		if (pslot->ret == 255) {
-			printf("%*s@%*s %s ssh failure\n",
-				user_len_max, pslot->hst->user,
-				host_len_max, pslot->hst->host,
-				pfx_crt[isatty(fileno(stdout))]);
+			if (verbose) {
+				printf("%*s@%*s %s ssh failure\n",
+					user_len_max, pslot->hst->user,
+					host_len_max, pslot->hst->host,
+					pfx_crt[isatty(fileno(stdout))]);
+			} else {
+				printf("%*s %s ssh failure\n",
+					host_len_max, pslot->hst->host,
+					pfx_crt[isatty(fileno(stdout))]);
+			}
 			fflush(stdout);
 			return;
 		}
@@ -262,12 +275,19 @@ pslot_printbuf(struct procslot *pslot, int outfd)
 			 * green if return code is zero and red if differs from zero
 			 * pfx_ret[isatty(fileno(stdout))?(pslot->ret?2:1):0]
 			 */
-			printf("%*s@%*s %s%s %d\n",
-				user_len_max, pslot->hst->user,
-				host_len_max, pslot->hst->host,
-				progress,
-				pfx_ret[isatty(fileno(stdout))?(pslot->ret?2:1):0],
-				pslot->ret);
+			if (verbose) {
+				printf("%*s@%*s %s%s %d\n",
+					user_len_max, pslot->hst->user,
+					host_len_max, pslot->hst->host,
+					progress,
+					pfx_ret[isatty(fileno(stdout))?(pslot->ret?2:1):0],
+					pslot->ret);
+			} else {
+				printf("%*s %s %d\n",
+					host_len_max, pslot->hst->host,
+					pfx_ret[isatty(fileno(stdout))?(pslot->ret?2:1):0],
+					pslot->ret);
+			}
 			fflush(stdout);
 		} else if (!pslot->used && !outdir && verbose) {
 			printf("%*s@%*s %s\n",
