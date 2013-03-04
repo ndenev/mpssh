@@ -278,10 +278,4 @@ pslot_printbuf(struct procslot *pslot, int outfd)
 		}
 	}
 
-	if (outdir && blind && verbose && !pslot->pid && (outfd == OUT) && (!strlen(bufp))) {
-		if (done > 1) for (i=1; i<host_len_max + 10; i++) printf("\b");
-		printf("%-*s %s", host_len_max, pslot->hst->host, progress);
-		fflush(stdout);
-	}
-
 }
