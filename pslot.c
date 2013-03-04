@@ -192,7 +192,6 @@ pslot_readbuf(struct procslot *pslot, int outfd)
 void
 pslot_printbuf(struct procslot *pslot, int outfd)
 {
-	int	i;
 	char	*bufp;
 	FILE	*stream;
 	char	progress[9];
