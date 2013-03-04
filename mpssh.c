@@ -214,8 +214,6 @@ parse_opts(int *argc, char ***argv)
 		switch (opt) {
 			case 'b':
 				blind = 1;
-				if (print_exit)
-					usage("-b is not compatible with -e");
 				break;
 			case 'd':
 				delay = (int)strtol(optarg,(char **)NULL,10);
@@ -225,8 +223,6 @@ parse_opts(int *argc, char ***argv)
 				break;
 			case 'e':
 				print_exit = 1;
-				if (blind)
-					usage("-b is not compatible with -e");
 				break;
 			case 'f':
 				if (fname)
