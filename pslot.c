@@ -32,7 +32,7 @@
 /*
  * process slot initialization routine
  */
-struct procslot*
+static struct procslot*
 pslot_new(int pid, struct host *hst)
 {
 	struct procslot *pslot_tmp;
@@ -200,6 +200,7 @@ pslot_printbuf(struct procslot *pslot, int outfd)
 	char	*pfx_out[] = { "OUT:", "->", "\033[1;32m->\033[0;39m", NULL };
 	char	*pfx_err[] = { "ERR:", "=>", "\033[1;31m=>\033[0;39m", NULL };
 	char	*pfx_ret[] = { "=:", "\033[1;32m=:\033[0;39m", "\033[1;31m=:\033[0;39m", NULL };
+	char	*pfx_crt[] = { "!!!", "\033[1;33m!!!\033[0;39m", NULL };
 
 	switch (outfd) {
 	case OUT:
@@ -249,9 +250,11 @@ pslot_printbuf(struct procslot *pslot, int outfd)
 	 */
 	} else if (!pslot->pid && (outfd == OUT)) {
 		if (pslot->ret == 255) {
-			printf("[%*s @ %*s] ssh failure\n",
+			printf("[%*s @ %*s] %s ssh failed to connect "
+				"or killed with signal\n",
 				user_len_max, pslot->hst->user,
-				host_len_max, pslot->hst->host);
+				host_len_max, pslot->hst->host,
+				pfx_crt[isatty(fileno(stdout))]);
 			fflush(stdout);
 			return;
 		}
