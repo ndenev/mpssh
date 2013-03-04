@@ -32,7 +32,7 @@
 /*
  * process slot initialization routine
  */
-struct procslot*
+static struct procslot*
 pslot_new(int pid, struct host *hst)
 {
 	struct procslot *pslot_tmp;
