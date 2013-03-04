@@ -77,7 +77,12 @@ reap_child()
 		done++;
 		ps = pslot_bypid(ps, pid);
 		ps->pid = 0;
-		ps->ret = WEXITSTATUS(ret);
+
+		if (WIFEXITED(ret))
+			ps->ret = WEXITSTATUS(ret);
+		else
+			ps->ret = 255;
+
 		while (pslot_readbuf(ps, OUT))
 			pslot_printbuf(ps, OUT);
 		while (pslot_readbuf(ps, ERR))
