@@ -148,10 +148,9 @@ host_readlist(char *fname)
 	}
 
 	while (fgets(line, sizeof(line), hstlist)) {
-		if (sscanf(line, "%[A-Za-z0-9-.@:%]", line) != 1) {
-			printf("Ignoring line : %s\n", line);
+
+		if (sscanf(line, "%[A-Za-z0-9-.@:%]", line) != 1)
 			continue;
-		}
 
 		linelen = strlen(line);
 
