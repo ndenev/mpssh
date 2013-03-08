@@ -142,8 +142,13 @@ child()
 	snprintf(tmo_arg,sizeof(tmo_arg), "-oConnectTimeout=%d",
 			ssh_conn_tmout);
 
-	execl(SSHPATH, "ssh", ssh_quiet?"-q":"", "-oNumberOfPasswordPrompts=0",
-		hkc_arg, tmo_arg, user_arg, port_arg, ps->hst->host, cmd, NULL);
+	if (ssh_quiet) {
+		execl(SSHPATH, "ssh", "-q", "-oNumberOfPasswordPrompts=0",
+			hkc_arg, tmo_arg, user_arg, port_arg, ps->hst->host, cmd, NULL);
+	} else {
+		execl(SSHPATH, "ssh", "-oNumberOfPasswordPrompts=0",
+			hkc_arg, tmo_arg, user_arg, port_arg, ps->hst->host, cmd, NULL);
+	}
 	perr("failed to exec the ssh binary");
 	exit(1);
 }

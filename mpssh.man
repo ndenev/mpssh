@@ -1,9 +1,10 @@
-.Dd 05/02/09
+.Dd 08/03/2013 
 .Dt mpssh
 .Sh NAME
 .Nm mpssh
 .Sh SYNOPSIS
 .Nm
+
 .Op Fl besvV
 .Op Fl o Ar directory 
 .Op Fl u Ar username
@@ -12,33 +13,38 @@
 .Ar <command> 
 .Sh DESCRIPTION
 
-
-  -h, --help         this screen
-  -u, --user=USER    ssh login as this username
-  -p, --procs=NPROC  number of parallel ssh processes
-  -f, --file=FILE    name of the file with the list of hosts
-  -l, --label=LABEL  connect only to hosts under label LABEL
-  -e, --exit         print the remote command return code
-  -b, --blind        enable blind mode (no remote output)
-  -o, --outdir=DIR   save the remote output in this directory
-  -s, --nokeychk     disable ssh strict host key check
-  -v, --verbose      be more verbose and show progress
-  -V, --version      show program version
+  -b, --blind       	enable blind mode (no remote output)
+  -d, --delay       	delay between each ssh fork (default 10 msec)
+  -e, --exit        	print the remote command return code
+  -f, --file=FILE   	name of the file with the list of hosts
+  -h, --help        	this screen
+  -l, --label=LABEL 	connect only to hosts under label LABEL
+  -o, --outdir=DIR  	save the remote output in this directory
+  -p, --procs=NPROC 	number of parallel ssh processes (default 100)
+  -s, --nokeychk    	disable ssh strict host key check
+  -t, --conntmout   	ssh connect timeout (default 30 sec)
+  -u, --user=USER   	ssh login as this username
+  -v, --verbose     	be more verbose (i.e. show usernames used)
+  -V, --version     	show program version
 
 The
 .Nm
-utility uses the ssh binary to connect to a number of hosts (specified in the hosts file) and execute <command> on each of them.
+utility executes multiple parallel ssh binary instances in order to connect to a list of hosts (specified in the hosts file) and execute the given <command> on each of them.
 
 A list of flags and arguments with description: 
 .Bl -tag -width -indent
 .It Fl b
-This flag enables "blind" mode, in which no output from the remote hosts is made to the screen. This mode can only be enabled if the
+This flag enables "blind" mode, in which no output from the remote hosts is output to the screen. This mode is normally used with the 
 .Fl o
-flag is used, so the output is saved to disk. 
+flag, so the output is saved to disk. 
+.It Fl d
+This flag sets some delay in msecs between each fork()/exec() of the ssh process.
 .It Fl e
 With this flag
 .Nm
 prints the return codes of the remotely executed commands.
+.It Fl l LABEL
+Only connect to the hosts under the given label.
 .It Fl s
 This flag disables the ssh(1)'s strict host key checking. For more info see the ssh(1) manual page.
 .It Fl v
