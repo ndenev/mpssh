@@ -49,6 +49,7 @@ int	 user_len_max	= 0;
 int	 host_len_max	= 0;
 int	 print_exit	= 0;
 int	 ssh_hkey_check	= 1;
+int	 ssh_quiet	= 0;
 int	 ssh_conn_tmout = 30;
 int	 verbose        = 0;
 sigset_t	sigmask;
@@ -141,7 +142,7 @@ child()
 	snprintf(tmo_arg,sizeof(tmo_arg), "-oConnectTimeout=%d",
 			ssh_conn_tmout);
 
-	execl(SSHPATH, "ssh", "-q", "-oNumberOfPasswordPrompts=0",
+	execl(SSHPATH, "ssh", ssh_quiet?"-q":"", "-oNumberOfPasswordPrompts=0",
 		hkc_arg, tmo_arg, user_arg, port_arg, ps->hst->host, cmd, NULL);
 	perr("failed to exec the ssh binary");
 	exit(1);
@@ -210,7 +211,7 @@ parse_opts(int *argc, char ***argv)
 	};
 
 	while ((opt = getopt_long(*argc, *argv,
-				"bd:ef:hl:o:p:u:t:svV", longopts, NULL)) != -1) {
+				"bd:ef:hl:o:p:qu:t:svV", longopts, NULL)) != -1) {
 		switch (opt) {
 			case 'b':
 				blind = 1;
@@ -244,6 +245,9 @@ parse_opts(int *argc, char ***argv)
 				maxchld = (int)strtol(optarg,(char **)NULL,10);
 				if (maxchld < 0) usage("bad numproc");
 				if (maxchld > MAXCHLD) maxchld = MAXCHLD;
+				break;
+			case 'q':
+				ssh_quiet = 1;
 				break;
 			case 's':
 				ssh_hkey_check = 0;
