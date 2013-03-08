@@ -176,6 +176,7 @@ usage(char *msg)
 		"  -l, --label=LABEL 	connect only to hosts under label LABEL\n"
 		"  -o, --outdir=DIR  	save the remote output in this directory\n"
 		"  -p, --procs=NPROC 	number of parallel ssh processes (default %d)\n"
+		"  -q, --quiet		run ssh with quiet option (no errors and banners\n"
 		"  -s, --nokeychk    	disable ssh strict host key check\n"
 		"  -t, --conntmout   	ssh connect timeout (default %d sec)\n"
 		"  -u, --user=USER   	ssh login as this username\n"
@@ -202,6 +203,7 @@ parse_opts(int *argc, char ***argv)
 		{ "label",	required_argument,	NULL,		'l' },
 		{ "outdir",	required_argument,	NULL,		'o' },
 		{ "procs",	required_argument,	NULL,		'p' },
+		{ "quiet",	no_argument,		NULL,		'q' },
 		{ "nokeychk",	no_argument,		NULL,		's' },
 		{ "conntmout",	required_argument,	NULL,		't' },
 		{ "user",	required_argument,	NULL,		'u' },
