@@ -131,6 +131,9 @@ child()
 	if (dup2(ps->io.err[1], 2) == -1)
 		perr("stderr dup fail %s\n",
 			 strerror(errno));
+#ifdef TESTING
+	ssh_argv[sap++] = "/bin/echo";
+#endif
 
 	ssh_argv[sap++] = SSHPATH;
 
@@ -160,23 +163,37 @@ child()
 			ssh_conn_tmout);
 	ssh_argv[sap++] = tmo_arg;
 
-	char *local_cmd_string;
-	local_cmd_string = calloc(1, 2048);
-	snprintf(local_cmd_string, 2048, "-oLocalCommand=\"%s -oControlMaster=yes -P%%p %s %%r@%%h:%s\"",
-				"/usr/bin/scp", script, script);
+	char *lcmd;
 
 	if (local_command) {
 		ssh_argv[sap++] = "-oPermitLocalCommand=yes";
-		ssh_argv[sap++] = local_cmd_string;
+
+		lcmd = calloc(1, 2048);
+		snprintf(lcmd, 2048, "-oLocalCommand=%s -oControlMaster=yes -P%d %s %s@%s:%s",
+			"/usr/bin/scp",
+			ps->hst->port,
+			script,
+			ps->hst->user,
+			ps->hst->host,
+			script);
+		ssh_argv[sap++] = lcmd;
 		ssh_argv[sap++] = "-oControlMaster=no";
 	}
 
 	ssh_argv[sap++] = ps->hst->host;
-	ssh_argv[sap++] = cmd;
 
+	if (local_command)
+		ssh_argv[sap++] = script;
+	else
+		ssh_argv[sap++] = cmd;
+
+	ssh_argv[sap++] = NULL;
+
+#ifdef TESTING
+	execv("/bin/echo", ssh_argv);
+#else
 	execv(SSHPATH, ssh_argv);
-
-//ssh -oPermitLocalCommand=yes -oLocalCommand="scp /tmp/kur.sh ndenev@localhost:kur.sh" ndenev@localhost "sh ./kur.sh"
+#endif
 
 	perr("failed to exec the ssh binary");
 	exit(1);
