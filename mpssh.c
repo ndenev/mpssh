@@ -103,15 +103,17 @@ reap_child()
 void
 child()
 {
+	char	*ssh_argv[10];
+	int	sap;
+
 	int	len_u;
 	char	*user_arg;
 	/* enough for -p65535\0 */
 	char	port_arg[8];
-	/* enough for -oStrictHostKeyChecking=yes\0 */
-	char	hkc_arg[28];
 	char	tmo_arg[32];
 
 	ps->pid = 0;
+	sap = 0;
 
 	/* close stdin of the child, so it won't accept input */
 	close(0);
@@ -128,27 +130,41 @@ child()
 		perr("stderr dup fail %s\n",
 			 strerror(errno));
 
+	ssh_argv[sap++] = SSHPATH;
+
+	ssh_argv[sap++] = "-oNumberOfPasswordPrompts=0";
+
+	if (ssh_quiet)
+		ssh_argv[sap++] = "-q";
+
 	/* space for -l and \0 */
 	len_u = strlen(ps->hst->user) + 3;
 	user_arg = calloc(1, len_u);
 	if (user_arg == NULL) {
 		exit(1);
 	}
-
 	snprintf(user_arg, len_u, "-l%s", ps->hst->user);
+	ssh_argv[sap++] = user_arg;
+
 	snprintf(port_arg, sizeof(port_arg), "-p%d", ps->hst->port);
-	snprintf(hkc_arg,sizeof(hkc_arg), "-oStrictHostKeyChecking=%s",
-			ssh_hkey_check?"yes":"no");
+	ssh_argv[sap++] = port_arg;
+
+	if (ssh_hkey_check)
+		ssh_argv[sap++] = "-oStrictHostKeyChecking=yes";
+	else
+		ssh_argv[sap++] = "-oStrictHostKeyChecking=no";
+
 	snprintf(tmo_arg,sizeof(tmo_arg), "-oConnectTimeout=%d",
 			ssh_conn_tmout);
+	ssh_argv[sap++] = tmo_arg;
+	ssh_argv[sap++] = ps->hst->host;
+	ssh_argv[sap++] = cmd;
+	ssh_argv[sap++] = NULL;
 
-	if (ssh_quiet) {
-		execl(SSHPATH, "ssh", "-q", "-oNumberOfPasswordPrompts=0",
-			hkc_arg, tmo_arg, user_arg, port_arg, ps->hst->host, cmd, NULL);
-	} else {
-		execl(SSHPATH, "ssh", "-oNumberOfPasswordPrompts=0",
-			hkc_arg, tmo_arg, user_arg, port_arg, ps->hst->host, cmd, NULL);
-	}
+	execv(SSHPATH, ssh_argv);
+
+//ssh -oPermitLocalCommand=yes -oLocalCommand="scp /tmp/kur.sh ndenev@localhost:kur.sh" ndenev@localhost "sh ./kur.sh"
+
 	perr("failed to exec the ssh binary");
 	exit(1);
 }
