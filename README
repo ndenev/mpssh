@@ -1,6 +1,6 @@
 
 MPSSH - Mass Parallel Secure Shell
-(c) 2005-2012 Nikolay Denev <ndenev@gmail.com>
+(c) 2005-2013 Nikolay Denev <ndenev@gmail.com>
 
 This program reads list of machines from text file (one hostname at line)
 and connects to all of the machines by creating upto N parallel ssh
