@@ -40,6 +40,7 @@
 #include <signal.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <libgen.h>
 
 #ifndef SSHPATH
 #define SSHPATH	"/usr/bin/ssh"

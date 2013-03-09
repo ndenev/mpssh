@@ -48,6 +48,9 @@ int	 pslots		= 0;
 int	 user_len_max	= 0;
 int	 host_len_max	= 0;
 int	 print_exit	= 0;
+int	 local_command	= 0;
+char	*script		= NULL;
+char	*base_script	= NULL;
 int	 ssh_hkey_check	= 1;
 int	 ssh_quiet	= 0;
 int	 ssh_conn_tmout = 30;
@@ -106,6 +109,7 @@ child()
 	char	*ssh_argv[10];
 	int	sap;
 
+	char	*lcmd;
 	int	len_u;
 	char	*user_arg;
 	/* enough for -p65535\0 */
@@ -129,6 +133,9 @@ child()
 	if (dup2(ps->io.err[1], 2) == -1)
 		perr("stderr dup fail %s\n",
 			 strerror(errno));
+#ifdef TESTING
+	ssh_argv[sap++] = "/bin/echo";
+#endif
 
 	ssh_argv[sap++] = SSHPATH;
 
@@ -157,13 +164,37 @@ child()
 	snprintf(tmo_arg,sizeof(tmo_arg), "-oConnectTimeout=%d",
 			ssh_conn_tmout);
 	ssh_argv[sap++] = tmo_arg;
+
+
+	if (local_command) {
+		ssh_argv[sap++] = "-oPermitLocalCommand=yes";
+		lcmd = calloc(1, 2048);
+		snprintf(lcmd, 2048, "-oLocalCommand=%s -P%d %s %s@%s:%s",
+			"/usr/bin/scp",
+			ps->hst->port,
+			script,
+			ps->hst->user,
+			ps->hst->host,
+			base_script);
+		ssh_argv[sap++] = lcmd;
+	}
+
 	ssh_argv[sap++] = ps->hst->host;
-	ssh_argv[sap++] = cmd;
+
+	if (local_command) {
+		ssh_argv[sap++] = "/bin/sh";
+		ssh_argv[sap++] = base_script;
+	} else {
+		ssh_argv[sap++] = cmd;
+	}
+
 	ssh_argv[sap++] = NULL;
 
+#ifdef TESTING
+	execv("/bin/echo", ssh_argv);
+#else
 	execv(SSHPATH, ssh_argv);
-
-//ssh -oPermitLocalCommand=yes -oLocalCommand="scp /tmp/kur.sh ndenev@localhost:kur.sh" ndenev@localhost "sh ./kur.sh"
+#endif
 
 	perr("failed to exec the ssh binary");
 	exit(1);
@@ -198,6 +229,7 @@ usage(char *msg)
 		"  -o, --outdir=DIR  	save the remote output in this directory\n"
 		"  -p, --procs=NPROC 	number of parallel ssh processes (default %d)\n"
 		"  -q, --quiet		run ssh with quiet option (no errors and banners\n"
+		"  -r, --script		copy local script to remote host and execute it\n"
 		"  -s, --nokeychk    	disable ssh strict host key check\n"
 		"  -t, --conntmout   	ssh connect timeout (default %d sec)\n"
 		"  -u, --user=USER   	ssh login as this username\n"
@@ -215,6 +247,7 @@ void
 parse_opts(int *argc, char ***argv)
 {
 	int opt;
+	struct stat scstat;
 
 	static struct option longopts[] = {
 		{ "blind",	no_argument,		NULL,		'b' },
@@ -225,6 +258,7 @@ parse_opts(int *argc, char ***argv)
 		{ "outdir",	required_argument,	NULL,		'o' },
 		{ "procs",	required_argument,	NULL,		'p' },
 		{ "quiet",	no_argument,		NULL,		'q' },
+		{ "script",	required_argument,	NULL,		'r' },
 		{ "nokeychk",	no_argument,		NULL,		's' },
 		{ "conntmout",	required_argument,	NULL,		't' },
 		{ "user",	required_argument,	NULL,		'u' },
@@ -234,7 +268,7 @@ parse_opts(int *argc, char ***argv)
 	};
 
 	while ((opt = getopt_long(*argc, *argv,
-				"bd:ef:hl:o:p:qu:t:svV", longopts, NULL)) != -1) {
+				"bd:ef:hl:o:p:qr:u:t:svV", longopts, NULL)) != -1) {
 		switch (opt) {
 			case 'b':
 				blind = 1;
@@ -272,6 +306,14 @@ parse_opts(int *argc, char ***argv)
 			case 'q':
 				ssh_quiet = 1;
 				break;
+			case 'r':
+				local_command = 1;
+				script = optarg;
+				if (stat(script, &scstat) < 0) {
+					usage("can't stat script file");
+				}
+				base_script = basename(script);
+				break;
 			case 's':
 				ssh_hkey_check = 0;
 				break;
@@ -303,6 +345,12 @@ parse_opts(int *argc, char ***argv)
 
 	if (!maxchld)
 		maxchld = DEFCHLD;
+
+	if (local_command) {
+		if(*argc)
+			usage("can't use remote command when executing local script");
+		return;
+	}
 
 	if (*argc > 1)
 		usage("too many arguments");
@@ -404,9 +452,15 @@ main(int argc, char *argv[])
 
 	printf( "MPSSH - Mass Parallel Ssh Ver.%s\n"
 		"(c)2005-2012 Nikolay Denev <ndenev@gmail.com>\n\n"
-		"  [*] read (%d) hosts from the list\n"
-		"  [*] executing \"%s\" as user \"%s\"\n",
-		Ver, hostcount, cmd, user);
+		"  [*] read (%d) hosts from the list\n",
+		Ver, hostcount);
+
+	if (local_command)
+		printf( "  [*] uploading and executing the script \"%s\" as user \"%s\"\n",
+			script, user);
+	else
+		printf( "  [*] executing \"%s\" as user \"%s\"\n",
+			cmd, user);
 
 	if (label)
 		printf("  [*] only on hosts labeled \"%s\"\n", label);
