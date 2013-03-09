@@ -169,7 +169,7 @@ child()
 		ssh_argv[sap++] = "-oPermitLocalCommand=yes";
 
 		lcmd = calloc(1, 2048);
-		snprintf(lcmd, 2048, "-oLocalCommand=%s -oControlMaster=yes -P%d %s %s@%s:%s",
+		snprintf(lcmd, 2048, "-oLocalCommand=%s -oControlPersist=5 -oControlPath=/tmp/%%h%%p%%r -oControlMaster=yes -P%d %s %s@%s:%s",
 			"/usr/bin/scp",
 			ps->hst->port,
 			script,
@@ -178,6 +178,7 @@ child()
 			script);
 		ssh_argv[sap++] = lcmd;
 		ssh_argv[sap++] = "-oControlMaster=no";
+		ssh_argv[sap++] = "-oControlPath=/tmp/%h%p%r";
 	}
 
 	ssh_argv[sap++] = ps->hst->host;
@@ -446,9 +447,15 @@ main(int argc, char *argv[])
 
 	printf( "MPSSH - Mass Parallel Ssh Ver.%s\n"
 		"(c)2005-2012 Nikolay Denev <ndenev@gmail.com>\n\n"
-		"  [*] read (%d) hosts from the list\n"
-		"  [*] executing \"%s\" as user \"%s\"\n",
-		Ver, hostcount, cmd, user);
+		"  [*] read (%d) hosts from the list\n",
+		Ver, hostcount);
+
+	if (local_command)
+		printf( "  [*] uploading and executing the script \"%s\" as user \"%s\"\n",
+			script, user);
+	else
+		printf( "  [*] executing \"%s\" as user \"%s\"\n",
+			cmd, user);
 
 	if (label)
 		printf("  [*] only on hosts labeled \"%s\"\n", label);
