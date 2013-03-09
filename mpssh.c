@@ -50,6 +50,7 @@ int	 host_len_max	= 0;
 int	 print_exit	= 0;
 int	 local_command	= 0;
 char	*script		= NULL;
+char	*base_script	= NULL;
 int	 ssh_hkey_check	= 1;
 int	 ssh_quiet	= 0;
 int	 ssh_conn_tmout = 30;
@@ -174,16 +175,18 @@ child()
 			script,
 			ps->hst->user,
 			ps->hst->host,
-			script);
+			base_script);
 		ssh_argv[sap++] = lcmd;
 	}
 
 	ssh_argv[sap++] = ps->hst->host;
 
-	if (local_command)
-		ssh_argv[sap++] = script;
-	else
+	if (local_command) {
+		ssh_argv[sap++] = "/bin/sh";
+		ssh_argv[sap++] = base_script;
+	} else {
 		ssh_argv[sap++] = cmd;
+	}
 
 	ssh_argv[sap++] = NULL;
 
@@ -244,6 +247,7 @@ void
 parse_opts(int *argc, char ***argv)
 {
 	int opt;
+	struct stat scstat;
 
 	static struct option longopts[] = {
 		{ "blind",	no_argument,		NULL,		'b' },
@@ -305,6 +309,10 @@ parse_opts(int *argc, char ***argv)
 			case 'r':
 				local_command = 1;
 				script = optarg;
+				if (stat(script, &scstat) < 0) {
+					usage("can't stat script file");
+				}
+				base_script = basename(script);
 				break;
 			case 's':
 				ssh_hkey_check = 0;
