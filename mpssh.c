@@ -48,6 +48,8 @@ int	 pslots		= 0;
 int	 user_len_max	= 0;
 int	 host_len_max	= 0;
 int	 print_exit	= 0;
+int	 local_command	= 0;
+char	*script		= NULL;
 int	 ssh_hkey_check	= 1;
 int	 ssh_quiet	= 0;
 int	 ssh_conn_tmout = 30;
@@ -157,9 +159,20 @@ child()
 	snprintf(tmo_arg,sizeof(tmo_arg), "-oConnectTimeout=%d",
 			ssh_conn_tmout);
 	ssh_argv[sap++] = tmo_arg;
+
+	char *local_cmd_string;
+	local_cmd_string = calloc(1, 2048);
+	snprintf(local_cmd_string, 2048, "-oLocalCommand=\"%s -oControlMaster=yes -P%%p %s %%r@%%h:%s\"",
+				"/usr/bin/scp", script, script);
+
+	if (local_command) {
+		ssh_argv[sap++] = "-oPermitLocalCommand=yes";
+		ssh_argv[sap++] = local_cmd_string;
+		ssh_argv[sap++] = "-oControlMaster=no";
+	}
+
 	ssh_argv[sap++] = ps->hst->host;
 	ssh_argv[sap++] = cmd;
-	ssh_argv[sap++] = NULL;
 
 	execv(SSHPATH, ssh_argv);
 
@@ -198,6 +211,7 @@ usage(char *msg)
 		"  -o, --outdir=DIR  	save the remote output in this directory\n"
 		"  -p, --procs=NPROC 	number of parallel ssh processes (default %d)\n"
 		"  -q, --quiet		run ssh with quiet option (no errors and banners\n"
+		"  -r, --script		copy local script to remote host and execute it\n"
 		"  -s, --nokeychk    	disable ssh strict host key check\n"
 		"  -t, --conntmout   	ssh connect timeout (default %d sec)\n"
 		"  -u, --user=USER   	ssh login as this username\n"
@@ -225,6 +239,7 @@ parse_opts(int *argc, char ***argv)
 		{ "outdir",	required_argument,	NULL,		'o' },
 		{ "procs",	required_argument,	NULL,		'p' },
 		{ "quiet",	no_argument,		NULL,		'q' },
+		{ "script",	required_argument,	NULL,		'r' },
 		{ "nokeychk",	no_argument,		NULL,		's' },
 		{ "conntmout",	required_argument,	NULL,		't' },
 		{ "user",	required_argument,	NULL,		'u' },
@@ -234,7 +249,7 @@ parse_opts(int *argc, char ***argv)
 	};
 
 	while ((opt = getopt_long(*argc, *argv,
-				"bd:ef:hl:o:p:qu:t:svV", longopts, NULL)) != -1) {
+				"bd:ef:hl:o:p:qr:u:t:svV", longopts, NULL)) != -1) {
 		switch (opt) {
 			case 'b':
 				blind = 1;
@@ -272,6 +287,10 @@ parse_opts(int *argc, char ***argv)
 			case 'q':
 				ssh_quiet = 1;
 				break;
+			case 'r':
+				local_command = 1;
+				script = optarg;
+				break;
 			case 's':
 				ssh_hkey_check = 0;
 				break;
@@ -303,6 +322,12 @@ parse_opts(int *argc, char ***argv)
 
 	if (!maxchld)
 		maxchld = DEFCHLD;
+
+	if (local_command) {
+		if(*argc)
+			usage("can't use remote command when executing local script");
+		return;
+	}
 
 	if (*argc > 1)
 		usage("too many arguments");
