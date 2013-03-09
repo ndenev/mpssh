@@ -167,9 +167,8 @@ child()
 
 	if (local_command) {
 		ssh_argv[sap++] = "-oPermitLocalCommand=yes";
-
 		lcmd = calloc(1, 2048);
-		snprintf(lcmd, 2048, "-oLocalCommand=%s -oControlPersist=5 -oControlPath=/tmp/%%h%%p%%r -oControlMaster=yes -P%d %s %s@%s:%s",
+		snprintf(lcmd, 2048, "-oLocalCommand=%s -P%d %s %s@%s:%s",
 			"/usr/bin/scp",
 			ps->hst->port,
 			script,
@@ -177,8 +176,6 @@ child()
 			ps->hst->host,
 			script);
 		ssh_argv[sap++] = lcmd;
-		ssh_argv[sap++] = "-oControlMaster=no";
-		ssh_argv[sap++] = "-oControlPath=/tmp/%h%p%r";
 	}
 
 	ssh_argv[sap++] = ps->hst->host;
