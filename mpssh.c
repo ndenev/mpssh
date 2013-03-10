@@ -106,7 +106,7 @@ reap_child()
 void
 child()
 {
-	char	*ssh_argv[10];
+	char	*ssh_argv[17];
 	int	sap;
 
 	char	*lcmd;
@@ -169,7 +169,7 @@ child()
 	if (local_command) {
 		ssh_argv[sap++] = "-oPermitLocalCommand=yes";
 		lcmd = calloc(1, 2048);
-		snprintf(lcmd, 2048, "-oLocalCommand=%s -P%d %s %s@%s:%s",
+		snprintf(lcmd, 2048, "-oLocalCommand=%s -P%d -p %s %s@%s:%s",
 			SCPPATH,
 			ps->hst->port,
 			script,
@@ -182,8 +182,10 @@ child()
 	ssh_argv[sap++] = ps->hst->host;
 
 	if (local_command) {
-		ssh_argv[sap++] = "/bin/sh";
-		ssh_argv[sap++] = base_script;
+		char *remexec;
+		remexec = calloc(1, strlen(base_script)+3);
+		snprintf(remexec, strlen(base_script)+3, "./%s", base_script);
+		ssh_argv[sap++] = remexec;
 	} else {
 		ssh_argv[sap++] = cmd;
 	}
@@ -312,6 +314,9 @@ parse_opts(int *argc, char ***argv)
 				if (stat(script, &scstat) < 0) {
 					usage("can't stat script file");
 				}
+				if (!(S_ISREG(scstat.st_mode) && scstat.st_mode & 0111)) {
+					usage("script file is not executable");
+				}	
 				base_script = basename(script);
 				break;
 			case 's':
