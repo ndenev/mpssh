@@ -1,9 +1,11 @@
 CC = gcc
 LD = gcc
-CFLAGS = -Wall
+SSHPATH = `which ssh`
+SCPPATH = `which scp`
+CFLAGS = -Wall -DSSHPATH=\"$(SSHPATH)\" -DSCPPATH=\"$(SCPPATH)\"
 LDFLAGS =
 RM = /bin/rm -f
-SSHPATH = `which ssh`
+
 
 LIBS =
 

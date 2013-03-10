@@ -46,6 +46,10 @@
 #define SSHPATH	"/usr/bin/ssh"
 #endif
 
+#ifndef SCPPATH
+#define SCPPATH "/usr/bin/scp"
+#endif
+
 #define SSHDEFPORT 22
 
 /* Default hosts filename, relative to users homedir */

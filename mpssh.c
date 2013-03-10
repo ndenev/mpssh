@@ -170,7 +170,7 @@ child()
 		ssh_argv[sap++] = "-oPermitLocalCommand=yes";
 		lcmd = calloc(1, 2048);
 		snprintf(lcmd, 2048, "-oLocalCommand=%s -P%d %s %s@%s:%s",
-			"/usr/bin/scp",
+			SCPPATH,
 			ps->hst->port,
 			script,
 			ps->hst->user,
