@@ -451,7 +451,7 @@ main(int argc, char *argv[])
 	tofree = hst;
 
 	printf( "MPSSH - Mass Parallel Ssh Ver.%s\n"
-		"(c)2005-2012 Nikolay Denev <ndenev@gmail.com>\n\n"
+		"(c)2005-2013 Nikolay Denev <ndenev@gmail.com>\n\n"
 		"  [*] read (%d) hosts from the list\n",
 		Ver, hostcount);
 
