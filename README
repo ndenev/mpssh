@@ -2,17 +2,20 @@
 MPSSH - Mass Parallel Secure Shell
 (c) 2005-2013 Nikolay Denev <ndenev@gmail.com>
 
-This program reads list of machines from text file (one hostname at line)
-and connects to all of the machines by creating upto N parallel ssh
-sessions. Then it reads the output from each ssh session and prints it on
-the screen prepending the machine name and the descriptor name (stdout/err).
-The number of parallel sessions N, the filename of the list of machine
-and the username to login as are user configurable.
+mpssh is a parallel ssh tool. What it does is connecting to a number of hosts
+specified in the hosts file and execute the same command on all of them,
+showing a nicely formatted output with each line prepended with the hostname
+that produced the line. It is also possible to specify a script on the local filesystem
+that will be first scp copied to the remote host and then executed.
 
-mpssh uses the ssh binary from the openssh package.
-There are no other external dependancies
+The hosts file allows to specify different usernames and ports for each host, and also
+to group hosts under different "labels" and then execute mpssh against certain label.
+
+The ssh fork rate and parallelism can be controlled to keep the load on the machine
+that executes mpssh under control.
+
+mpssh uses the ssh binary from the openssh package, and executes it directly.
+There are no other external dependancies.
 mpssh depends on preexisting passwordless authentication method such as
 pubkey or kerberos to work.
-mpssh supports alternative ssh ports and different usernames per host.
-Also the hosts can be grouped and one can execute the same command on all hosts in
-a group by specifying the group label with the -l option.
+
