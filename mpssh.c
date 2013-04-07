@@ -442,9 +442,6 @@ main(int argc, char *argv[])
 		user = pw->pw_name;
 	}
 
-	if (blind && !outdir)
-		usage("can't use blind mode without outdir");
-
 	hst = host_readlist(fname);
 
 	if (hst == NULL) {
