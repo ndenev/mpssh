@@ -292,7 +292,7 @@ pslot_printbuf(struct procslot *pslot, int outfd)
 					pslot->ret);
 			}
 			fflush(stdout);
-		} else if (!pslot->used && !outdir && verbose) {
+		} else if (!pslot->used && !blind && verbose) {
 			printf("%*s@%*s %s\n",
 				user_len_max, pslot->hst->user,
 				host_len_max, pslot->hst->host,
