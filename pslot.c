@@ -216,12 +216,15 @@ pslot_printbuf(struct procslot *pslot, int outfd)
 		return;
 	}
 
+	/*
 	if (verbose) {
 		//snprintf(progress, sizeof(progress), "[%d]", 100 / ( hostcount - done ) );
 		progress[0] = '\0';
 	} else {
 		progress[0] = '\0';
 	}
+	*/
+	progress[0] = '\0';
 
 	if (strlen(bufp)) {
 		if (outdir) {
