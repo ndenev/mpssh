@@ -128,8 +128,14 @@ host_openfile(char *fname)
 
 		hstlist = stdin;
 
+		if (verbose)
+			fprintf(stdout, "Reading hosts from : stdin\n");
+
 		goto out;
 	}
+
+	if (verbose)
+		fprintf(stdout, "Reading hosts from : %s\n", fname);
 
 	hstlist = fopen(fname, "r");
 
@@ -162,9 +168,6 @@ host_readlist(char *fname)
 
 	if (hstlist == NULL)
 		exit(1);
-
-	if (verbose)
-		fprintf(stdout, "Reading hosts from : %s\n", fname);
 
 	hst_head = hst = host_add(NULL, NULL, NULL, 0);
 
