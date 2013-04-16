@@ -90,6 +90,56 @@ host_add(struct host *hst, char *user, char *host, uint16_t port)
 	return(hst->next);
 }
 
+static FILE*
+host_openfile(char *fname)
+{
+	int		fnamelen;
+	char		*home;
+	FILE		*hstlist;
+
+	if (fname == NULL) {
+		home = getenv("HOME");
+		if (!home) {
+			perr("Can't get HOME env var in %s\n", __func__);
+			return NULL;
+		}
+
+		fnamelen = strlen(home) + strlen("/"HSTLIST) + 1;
+
+		fname = calloc(1, fnamelen);
+
+		if (!fname) {
+			perr("Can't alloc mem in %s\n", __func__);
+			return NULL;
+		}
+
+		sprintf(fname, "%s/"HSTLIST, home);
+
+	} else if (strcmp(fname, "-") == 0) {
+
+		fname = calloc(1, strlen("stdin")+1);
+
+		if (!fname) {
+			perr("Can't alloc mem in %s\n", __func__);
+			return NULL;
+		}
+
+		sprintf(fname, "stdin");
+
+		hstlist = stdin;
+
+		goto out;
+	}
+
+	hstlist = fopen(fname, "r");
+
+	if (!hstlist)
+		perr("Can't open file: %s (%s) in %s\n",
+			fname, strerror(errno), __func__);
+out:
+	return hstlist;
+}
+
 /*
  * routine that reads the host from a file and puts them
  * in the hostlist linked list using the above two routines
@@ -104,45 +154,17 @@ host_readlist(char *fname)
 	int		i;
 	int 		linelen;
 	unsigned long	port;
-	int		fnamelen;
 	char		*login = NULL;
 	char		*hostname = NULL;
 	char		*llabel = NULL;
-	char		*home;
 
-	if (fname == NULL) {
-		home = getenv("HOME");
-		if (!home) {
-			perr("Can't get HOME env var in %s\n", __func__);
-			exit(1);
-		}
+	hstlist = host_openfile(fname);
 
-		fnamelen = strlen(home) + strlen("/"HSTLIST) + 1;
-
-		fname = calloc(1, fnamelen);
-
-		if (!fname) {
-			perr("Can't alloc mem in %s\n", __func__);
-			exit(1);
-		}
-
-		sprintf(fname, "%s/"HSTLIST, home);
-
-	} else if (strcmp(fname, "-") == 0) {
-                fname = calloc(1, strlen("/dev/stdin")+1);
-                sprintf(fname, "/dev/stdin");
-        }
+	if (hstlist == NULL)
+		exit(1);
 
 	if (verbose)
 		fprintf(stdout, "Reading hosts from : %s\n", fname);
-
-	hstlist = fopen(fname, "r");
-
-	if (hstlist == NULL) {
-		perr("Can't open file: %s (%s) in %s\n",
-			fname, strerror(errno), __func__);
-		exit(1);
-	}
 
 	hst_head = hst = host_add(NULL, NULL, NULL, 0);
 
