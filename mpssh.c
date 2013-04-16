@@ -226,6 +226,7 @@ usage(char *msg)
 		"  -d, --delay       	delay between each ssh fork (default %d msec)\n"
 		"  -e, --exit        	print the remote command return code\n"
 		"  -f, --file=FILE   	name of the file with the list of hosts\n"
+                "                       or - for stdin\n"
 		"  -h, --help        	this screen\n"
 		"  -l, --label=LABEL 	connect only to hosts under label LABEL\n"
 		"  -o, --outdir=DIR  	save the remote output in this directory\n"

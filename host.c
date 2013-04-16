@@ -127,7 +127,11 @@ host_readlist(char *fname)
 		}
 
 		sprintf(fname, "%s/"HSTLIST, home);
-	}
+
+	} else if (strcmp(fname, "-") == 0) {
+                fname = calloc(1, strlen("/dev/stdin")+1);
+                sprintf(fname, "/dev/stdin");
+        }
 
 	if (verbose)
 		fprintf(stdout, "Reading hosts from : %s\n", fname);
