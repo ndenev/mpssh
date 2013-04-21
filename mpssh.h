@@ -87,3 +87,5 @@ extern int blind;
 extern char *outdir;
 extern char *user;
 extern char *label;
+extern int no_err;
+extern int no_out;

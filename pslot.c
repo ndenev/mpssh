@@ -203,11 +203,15 @@ pslot_printbuf(struct procslot *pslot, int outfd)
 
 	switch (outfd) {
 	case OUT:
+                if (no_out)
+                    return;
 		bufp = pslot->out_buf;
 		stream_pfx = pfx_out;
 		stream = stdout;
 		break;
 	case ERR:
+                if (no_err)
+                    return;
 		bufp = pslot->err_buf;
 		stream_pfx = pfx_err;
 		stream = stderr;

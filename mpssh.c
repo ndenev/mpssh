@@ -55,6 +55,8 @@ int	 ssh_hkey_check	= 1;
 int	 ssh_quiet	= 0;
 int	 ssh_conn_tmout = 30;
 int	 verbose        = 0;
+int      no_err         = 0;
+int      no_out         = 0;
 sigset_t	sigmask;
 sigset_t	osigmask;
 
@@ -225,13 +227,15 @@ usage(char *msg)
 		"  -b, --blind       	enable blind mode (no remote output)\n"
 		"  -d, --delay       	delay between each ssh fork (default %d msec)\n"
 		"  -e, --exit        	print the remote command return code\n"
+                "  -E, --no-err         suppress stderr output\n"
 		"  -f, --file=FILE   	name of the file with the list of hosts\n"
                 "                       or - for stdin\n"
 		"  -h, --help        	this screen\n"
 		"  -l, --label=LABEL 	connect only to hosts under label LABEL\n"
 		"  -o, --outdir=DIR  	save the remote output in this directory\n"
+                "  -O, --no-out         suppress stdout output\n"
 		"  -p, --procs=NPROC 	number of parallel ssh processes (default %d)\n"
-		"  -q, --quiet		run ssh with quiet option (no errors and banners\n"
+		"  -q, --quiet		run ssh with -q\n"
 		"  -r, --script		copy local script to remote host and execute it\n"
 		"  -s, --nokeychk    	disable ssh strict host key check\n"
 		"  -t, --conntmout   	ssh connect timeout (default %d sec)\n"
@@ -263,6 +267,8 @@ parse_opts(int *argc, char ***argv)
 		{ "quiet",	no_argument,		NULL,		'q' },
 		{ "script",	required_argument,	NULL,		'r' },
 		{ "nokeychk",	no_argument,		NULL,		's' },
+                { "no-err",     no_argument,            NULL,           'E' },
+                { "no-out",     no_argument,            NULL,           'O' },
 		{ "conntmout",	required_argument,	NULL,		't' },
 		{ "user",	required_argument,	NULL,		'u' },
 		{ "verbose",	no_argument,		NULL,		'v' },
@@ -271,7 +277,7 @@ parse_opts(int *argc, char ***argv)
 	};
 
 	while ((opt = getopt_long(*argc, *argv,
-				"bd:ef:hl:o:p:qr:u:t:svV", longopts, NULL)) != -1) {
+				"bd:eEf:hl:o:Op:qr:u:t:svV", longopts, NULL)) != -1) {
 		switch (opt) {
 			case 'b':
 				blind = 1;
@@ -285,6 +291,9 @@ parse_opts(int *argc, char ***argv)
 			case 'e':
 				print_exit = 1;
 				break;
+                        case 'E':
+                                no_err = 1;
+                                break;
 			case 'f':
 				if (fname)
 					usage("one filename allowed");
@@ -301,6 +310,9 @@ parse_opts(int *argc, char ***argv)
 					usage("one output dir allowed");
 				outdir = optarg;
 				break;
+                        case 'O':
+                                no_out = 1;
+                                break;
 			case 'p':
 				maxchld = (int)strtol(optarg,(char **)NULL,10);
 				if (maxchld < 0) usage("bad numproc");
