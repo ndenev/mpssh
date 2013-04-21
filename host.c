@@ -36,44 +36,44 @@
 static struct host*
 host_new(char *user, char *host, uint16_t port)
 {
-	static struct host *hst;
+    static struct host *hst;
 
-	if (!(hst = calloc(1, sizeof(struct host)))) goto fail;
+    if (!(hst = calloc(1, sizeof(struct host)))) goto fail;
 
-	if (user) {
-		hst->user = calloc(1, strlen(user)+1);
-		if (hst->user == NULL)
-			goto fail;
-		strncpy(hst->user, user, strlen(user));
-	} else {
-		hst->user = NULL;
-	}
+    if (user) {
+        hst->user = calloc(1, strlen(user)+1);
+        if (hst->user == NULL)
+            goto fail;
+        strncpy(hst->user, user, strlen(user));
+    } else {
+        hst->user = NULL;
+    }
 
-	if (host) {
-		hst->host = calloc(1, strlen(host)+1);
-		if (hst->host == NULL)
-			goto fail;
-		strncpy(hst->host, host, strlen(host));
-	} else {
-		hst->host = NULL;
-	}
+    if (host) {
+        hst->host = calloc(1, strlen(host)+1);
+        if (hst->host == NULL)
+            goto fail;
+        strncpy(hst->host, host, strlen(host));
+    } else {
+        hst->host = NULL;
+    }
 
-	hst->port = port;
+    hst->port = port;
 
-	hst->next = NULL;
+    hst->next = NULL;
 
-	return(hst);
+    return(hst);
 fail:
-	perr("Can't alloc mem in %s\n", __func__);
+    perr("Can't alloc mem in %s\n", __func__);
 
-	if (hst->user != NULL)
-		free(hst->user);
-	if (hst->host != NULL)
-		free(hst->host);
-	if (hst != NULL)
-		free(hst);
+    if (hst->user != NULL)
+        free(hst->user);
+    if (hst->host != NULL)
+        free(hst->host);
+    if (hst != NULL)
+        free(hst);
 
-	exit(1);
+    exit(1);
 }
 
 /*
@@ -83,67 +83,67 @@ fail:
 static struct host*
 host_add(struct host *hst, char *user, char *host, uint16_t port)
 {
-	if (hst == NULL)
-		return(host_new(user, host, port));
+    if (hst == NULL)
+        return(host_new(user, host, port));
 
-	hst->next = host_add(hst->next, user, host, port);
-	return(hst->next);
+    hst->next = host_add(hst->next, user, host, port);
+    return(hst->next);
 }
 
 static FILE*
 host_openfile(char *fname)
 {
-	int		fnamelen;
-	char		*home;
-	FILE		*hstlist;
+    int   fnamelen;
+    char *home;
+    FILE *hstlist;
 
-	if (fname == NULL) {
-		home = getenv("HOME");
-		if (!home) {
-			perr("Can't get HOME env var in %s\n", __func__);
-			return NULL;
-		}
+    if (fname == NULL) {
+        home = getenv("HOME");
+        if (!home) {
+            perr("Can't get HOME env var in %s\n", __func__);
+            return NULL;
+        }
 
-		fnamelen = strlen(home) + strlen("/"HSTLIST) + 1;
+        fnamelen = strlen(home) + strlen("/"HSTLIST) + 1;
 
-		fname = calloc(1, fnamelen);
+        fname = calloc(1, fnamelen);
 
-		if (!fname) {
-			perr("Can't alloc mem in %s\n", __func__);
-			return NULL;
-		}
+        if (!fname) {
+            perr("Can't alloc mem in %s\n", __func__);
+            return NULL;
+        }
 
-		sprintf(fname, "%s/"HSTLIST, home);
+        sprintf(fname, "%s/"HSTLIST, home);
 
-	} else if (strcmp(fname, "-") == 0) {
+    } else if (strcmp(fname, "-") == 0) {
 
-		fname = calloc(1, strlen("stdin")+1);
+        fname = calloc(1, strlen("stdin")+1);
 
-		if (!fname) {
-			perr("Can't alloc mem in %s\n", __func__);
-			return NULL;
-		}
+        if (!fname) {
+            perr("Can't alloc mem in %s\n", __func__);
+            return NULL;
+        }
 
-		sprintf(fname, "stdin");
+        sprintf(fname, "stdin");
 
-		hstlist = stdin;
+        hstlist = stdin;
 
-		if (verbose)
-			fprintf(stdout, "Reading hosts from : stdin\n");
+        if (verbose)
+            fprintf(stdout, "Reading hosts from : stdin\n");
 
-		goto out;
-	}
+        goto out;
+    }
 
-	if (verbose)
-		fprintf(stdout, "Reading hosts from : %s\n", fname);
+    if (verbose)
+        fprintf(stdout, "Reading hosts from : %s\n", fname);
 
-	hstlist = fopen(fname, "r");
+    hstlist = fopen(fname, "r");
 
-	if (!hstlist)
-		perr("Can't open file: %s (%s) in %s\n",
-			fname, strerror(errno), __func__);
+    if (!hstlist)
+        perr("Can't open file: %s (%s) in %s\n",
+            fname, strerror(errno), __func__);
 out:
-	return hstlist;
+    return hstlist;
 }
 
 /*
@@ -153,147 +153,147 @@ out:
 struct host*
 host_readlist(char *fname)
 {
-	FILE		*hstlist;
-	struct host	*hst;
-	struct host	*hst_head;
-	char		line[MAXNAME*3];
-	int		i;
-	int 		linelen;
-	unsigned long	port;
-	char		*login = NULL;
-	char		*hostname = NULL;
-	char		*llabel = NULL;
+    FILE   *hstlist;
+    struct  host *hst;
+    struct  host *hst_head;
+    char    line[MAXNAME*3];
+    int     i;
+    int     linelen;
+    u_long  port;
+    char   *login = NULL;
+    char   *hostname = NULL;
+    char   *llabel = NULL;
 
-	hstlist = host_openfile(fname);
+    hstlist = host_openfile(fname);
 
-	if (hstlist == NULL)
-		exit(1);
+    if (hstlist == NULL)
+        exit(1);
 
-	hst_head = hst = host_add(NULL, NULL, NULL, 0);
+    hst_head = hst = host_add(NULL, NULL, NULL, 0);
 
-	if (hst_head == NULL) {
-		perr("Unable to add host structure head in %s\n", __func__);
-		exit(1);
-	}
+    if (hst_head == NULL) {
+        perr("Unable to add host structure head in %s\n", __func__);
+        exit(1);
+    }
 
-	while (fgets(line, sizeof(line), hstlist)) {
+    while (fgets(line, sizeof(line), hstlist)) {
 
-		if (sscanf(line, "%[A-Za-z0-9-.@:%]", line) != 1)
-			continue;
+        if (sscanf(line, "%[A-Za-z0-9-.@:%]", line) != 1)
+            continue;
 
-		linelen = strlen(line);
+        linelen = strlen(line);
 
-		/* label support */
-		if (line[0] == '%') {
-			if (llabel)
-				free(llabel);
-			llabel = calloc(1, linelen + 1);
-			if (llabel == NULL) {
-				perr("Can't alloc mem in %s\n", __func__);
-				exit(1);
-			}
-			strncpy(llabel, &line[1], linelen);
-			continue;
-		}
+        /* label support */
+        if (line[0] == '%') {
+            if (llabel)
+                free(llabel);
+            llabel = calloc(1, linelen + 1);
+            if (llabel == NULL) {
+                perr("Can't alloc mem in %s\n", __func__);
+                exit(1);
+            }
+            strncpy(llabel, &line[1], linelen);
+            continue;
+        }
 
-		hostname = line;
-		login = NULL;
-		port = SSHDEFPORT;
+        hostname = line;
+        login = NULL;
+        port = SSHDEFPORT;
 
-		/* XXX: This is ugly */
-		for (i=0; i < linelen; i++) {
-			switch (line[i]) {
-				case '@':
-					if (login)
-						break;
-					line[i] = '\0';
-					if (strlen(line))
-						login = line;
-					else
-						break;
-					hostname = &line[i+1];
-					break;
-				case ':':
-					line[i] = '\0';
-					port = strtol(&line[i+1],
-						(char **)NULL, 10);
-					break;
-				default:
-					break;
-			}
-		}
+        /* XXX: This is ugly */
+        for (i=0; i < linelen; i++) {
+            switch (line[i]) {
+                case '@':
+                    if (login)
+                        break;
+                    line[i] = '\0';
+                    if (strlen(line))
+                        login = line;
+                    else
+                        break;
+                    hostname = &line[i+1];
+                    break;
+                case ':':
+                    line[i] = '\0';
+                    port = strtol(&line[i+1],
+                        (char **)NULL, 10);
+                    break;
+                default:
+                    break;
+            }
+        }
 
-		if ((hostname == NULL) || (strlen(hostname) == 0))
-			continue;
+        if ((hostname == NULL) || (strlen(hostname) == 0))
+            continue;
 
-		errno = 0;
+        errno = 0;
 
-		if (!login)
-			login = user;
+        if (!login)
+            login = user;
 
-		/* check if labels match */
-		if (label && llabel) {
-			if (strcmp(llabel, label))
-				continue;
-		}
+        /* check if labels match */
+        if (label && llabel) {
+            if (strcmp(llabel, label))
+                continue;
+        }
 
-		if (port == 0)
-			continue;
+        if (port == 0)
+            continue;
 
-		/* add the host record */
-		hst = host_add(hst, login, hostname, (uint16_t)port);
+        /* add the host record */
+        hst = host_add(hst, login, hostname, (uint16_t)port);
 
-		if (hst == NULL) {
-			perr("Unable to add member to "
-				"the host struct in %s\n", __func__);
-			exit(1);
-		}
+        if (hst == NULL) {
+            perr("Unable to add member to "
+                "the host struct in %s\n", __func__);
+            exit(1);
+        }
 
-		/* keep track of the longest username */
-		if (login && strlen(login) > user_len_max)
-			user_len_max = strlen(login);
+        /* keep track of the longest username */
+        if (login && strlen(login) > user_len_max)
+            user_len_max = strlen(login);
 
-		/* keep track of the longest hostname */
-		if (strlen(hostname) > host_len_max)
-			host_len_max = strlen(hostname);
+        /* keep track of the longest hostname */
+        if (strlen(hostname) > host_len_max)
+            host_len_max = strlen(hostname);
 
-		hostcount++;
-	}
+        hostcount++;
+    }
 
-	if (llabel)
-		free(llabel);
+    if (llabel)
+        free(llabel);
 
-	fclose(hstlist);
+    fclose(hstlist);
 
-	if (maxchld > hostcount)
-		maxchld = hostcount;
+    if (maxchld > hostcount)
+        maxchld = hostcount;
 
-	hst = hst_head->next;
+    hst = hst_head->next;
 
-	free(hst_head);
+    free(hst_head);
 
-	return(hst);
+    return(hst);
 }
 
 void
 host_free(struct host *hst)
 {
-	struct host *next = NULL;
+    struct host *next = NULL;
 
-	if (hst == NULL)
-		return;
+    if (hst == NULL)
+        return;
 
-	next = hst;
+    next = hst;
 
-	while (next != NULL) {
-		hst = hst->next;
+    while (next != NULL) {
+        hst = hst->next;
 
-		if (next->host != NULL)
-			free(next->host);
-		if (next->user != NULL)
-			free(next->user);
+        if (next->host != NULL)
+            free(next->host);
+        if (next->user != NULL)
+            free(next->user);
 
-		free(next);
-		next = hst;
-	}
+        free(next);
+        next = hst;
+    }
 }

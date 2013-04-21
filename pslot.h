@@ -25,36 +25,36 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define LINEBUF 1024	/* max output line len */
+#define LINEBUF 1024    /* max output line len */
 
 
 /* stdout/err structure for struct procslot */
 struct
 stdio_pipe {
-	int     out[2];
-	int     err[2];
+    int out[2];
+    int err[2];
 };
 
 /* stdout/stderr output filenames and filehandles */
 struct
 out_files {
-	char	*name;
-	FILE	*fh;
+    char *name;
+    FILE *fh;
 };
 
 /* process slot structure */
 struct
 procslot {
-	int	pid;
-	struct  host  *hst;
-	char    out_buf[LINEBUF];
-	char    err_buf[LINEBUF];
-	struct	out_files outf[2];
-	int	used;
-	int	ret;
-	struct  stdio_pipe io;
-	struct	procslot	*prev;
-	struct	procslot	*next;
+    int     pid;
+    struct  host *hst;
+    char    out_buf[LINEBUF];
+    char    err_buf[LINEBUF];
+    struct  out_files outf[2];
+    int     used;
+    int     ret;
+    struct  stdio_pipe io;
+    struct  procslot *prev;
+    struct  procslot *next;
 };
 
 /* global process slot var */

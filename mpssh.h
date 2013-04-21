@@ -43,7 +43,7 @@
 #include <libgen.h>
 
 #ifndef SSHPATH
-#define SSHPATH	"/usr/bin/ssh"
+#define SSHPATH    "/usr/bin/ssh"
 #endif
 
 #ifndef SCPPATH
@@ -53,23 +53,23 @@
 #define SSHDEFPORT 22
 
 /* Default hosts filename, relative to users homedir */
-#define	HSTLIST ".mpssh/hosts"
-#define	MAXCMD  1024				/* max command len */
-#define	MAXUSER 30				/* max username len */
-#define	MAXCHLD 1024 				/* max child procs */
-#define	DEFCHLD	100				/* default child procs */
-#define	OUT	1
-#define	ERR	2
-#define MAXFD	1024				/* max filedesc number */
+#define HSTLIST  ".mpssh/hosts"
+#define MAXCMD   1024                /* max command len */
+#define MAXUSER    30                /* max username len */
+#define MAXCHLD  1024                /* max child procs */
+#define DEFCHLD   100                /* default child procs */
+#define OUT         1
+#define ERR         2
+#define MAXFD    1024                /* max filedesc number */
 
 /* block/unblck SIGCHLD macros. */
-#define BLOCK_SIGCHLD 							\
-	sigemptyset(&sigmask);						\
-	sigaddset(&sigmask, SIGCHLD);					\
-	sigprocmask(SIG_BLOCK, &sigmask, &osigmask)
+#define BLOCK_SIGCHLD                           \
+    sigemptyset(&sigmask);                      \
+    sigaddset(&sigmask, SIGCHLD);               \
+    sigprocmask(SIG_BLOCK, &sigmask, &osigmask)
 
-#define UNBLOCK_SIGCHLD							\
-	sigprocmask(SIG_SETMASK, &osigmask, NULL)
+#define UNBLOCK_SIGCHLD                         \
+    sigprocmask(SIG_SETMASK, &osigmask, NULL)
 
 #define perr(...) fprintf(stderr, __VA_ARGS__)
 
