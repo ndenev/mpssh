@@ -445,6 +445,7 @@ main(int argc, char *argv[])
     struct host *hst, *tofree;
     int    i;
     int    pid;
+    int    tty;
     fd_set readfds;
     int    children_fds;
     struct timeval *timeout;
@@ -468,35 +469,39 @@ main(int argc, char *argv[])
 
     tofree = hst;
 
-    printf( "MPSSH - Mass Parallel Ssh Ver.%s\n"
+    /* Console Printf if we are running on tty */
+    tty = isatty(fileno(stdout));
+#define tty_printf(...) if (tty) fprintf(stdout, __VA_ARGS__)
+
+    tty_printf( "MPSSH - Mass Parallel Ssh Ver.%s\n"
         "(c)2005-2013 Nikolay Denev <ndenev@gmail.com>\n\n"
         "  [*] read (%d) hosts from the list\n",
         Ver, hostcount);
 
-    if (local_command)
-        printf( "  [*] uploading and executing the script \"%s\" as user \"%s\"\n",
+    if (local_command) {
+        tty_printf( "  [*] uploading and executing the script \"%s\" as user \"%s\"\n",
             script, user);
-    else
-        printf( "  [*] executing \"%s\" as user \"%s\"\n",
-            cmd, user);
+    } else {
+        tty_printf( "  [*] executing \"%s\" as user \"%s\"\n", cmd, user);
+    }
 
     if (label)
-        printf("  [*] only on hosts labeled \"%s\"\n", label);
+        tty_printf("  [*] only on hosts labeled \"%s\"\n", label);
 
     if (!ssh_hkey_check)
-        printf("  [*] strict host key check disabled\n");
+        tty_printf("  [*] strict host key check disabled\n");
 
     if (blind)
-        printf("  [*] blind mode enabled\n");
+        tty_printf("  [*] blind mode enabled\n");
 
     if (verbose)
-        printf("  [*] verbose mode enabled\n");
+        tty_printf("  [*] verbose mode enabled\n");
 
     if (outdir) {
         if (!access(outdir, R_OK | W_OK | X_OK)) {
-            printf("  [*] using output directory : %s\n", outdir);
+           tty_printf("  [*] using output directory : %s\n", outdir);
         } else {
-            printf("  [*] creating output directory : %s\n", outdir);
+            tty_printf("  [*] creating output directory : %s\n", outdir);
             if (mkdir(outdir, 0755)) {
                 perr("\n *** can't create output dir : ");
                 perror(outdir);
@@ -504,7 +509,7 @@ main(int argc, char *argv[])
             }
         }
     }
-    printf("  [*] spawning %d parallel ssh sessions\n\n",
+    tty_printf("  [*] spawning %d parallel ssh sessions\n\n",
             maxchld);
     fflush(NULL);
 
@@ -578,7 +583,7 @@ main(int argc, char *argv[])
             UNBLOCK_SIGCHLD;
         }
     }
-    printf("\n  Done. %d hosts processed.\n", done);
+    tty_printf("\n  Done. %d hosts processed.\n", done);
 
     host_free(tofree);
 
