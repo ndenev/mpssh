@@ -344,7 +344,7 @@ parse_opts(int *argc, char ***argv)
                 if (user)
                     usage("one username allowed");
                 user = optarg;
-                if (strlen(user) > MAXUSER)
+                if (user && strlen(user) > MAXUSER)
                     usage("username too long");
                 break;
             case 'v':
