@@ -199,7 +199,7 @@ host_readlist(char *fname)
 
         hostname = line;
         login = NULL;
-        port = SSHDEFPORT;
+        port = NULL;
 
         /* XXX: This is ugly */
         for (i=0; i < linelen; i++) {
@@ -237,9 +237,6 @@ host_readlist(char *fname)
             if (strcmp(llabel, label))
                 continue;
         }
-
-        if (port == 0)
-            continue;
 
         /* add the host record */
         hst = host_add(hst, login, hostname, (uint16_t)port);
