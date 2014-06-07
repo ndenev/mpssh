@@ -158,8 +158,10 @@ child()
     snprintf(user_arg, len_u, "-l%s", ps->hst->user);
     ssh_argv[sap++] = user_arg;
 
-    snprintf(port_arg, sizeof(port_arg), "-p%d", ps->hst->port);
-    ssh_argv[sap++] = port_arg;
+    if (ps->hst->port != NULL) {
+        snprintf(port_arg, sizeof(port_arg), "-p%d", ps->hst->port);
+        ssh_argv[sap++] = port_arg;
+    }
 
     if (ssh_hkey_check)
         ssh_argv[sap++] = "-oStrictHostKeyChecking=yes";
@@ -331,7 +333,7 @@ parse_opts(int *argc, char ***argv)
                 }
                 if (!(S_ISREG(scstat.st_mode) && scstat.st_mode & 0111)) {
                     usage("script file is not executable");
-                }    
+                }
                 base_script = basename(script);
                 break;
             case 's':

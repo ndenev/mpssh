@@ -50,8 +50,6 @@
 #define SCPPATH "/usr/bin/scp"
 #endif
 
-#define SSHDEFPORT 22
-
 /* Default hosts filename, relative to users homedir */
 #define HSTLIST  ".mpssh/hosts"
 #define MAXCMD   1024                /* max command len */
