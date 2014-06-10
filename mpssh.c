@@ -158,7 +158,7 @@ child()
     snprintf(user_arg, len_u, "-l%s", ps->hst->user);
     ssh_argv[sap++] = user_arg;
 
-    if (ps->hst->port != NULL) {
+    if (ps->hst->port != NON_DEFINED_PORT) {
         snprintf(port_arg, sizeof(port_arg), "-p%d", ps->hst->port);
         ssh_argv[sap++] = port_arg;
     }

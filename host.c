@@ -199,7 +199,7 @@ host_readlist(char *fname)
 
         hostname = line;
         login = NULL;
-        port = NULL;
+        port = NON_DEFINED_PORT;
 
         /* XXX: This is ugly */
         for (i=0; i < linelen; i++) {
