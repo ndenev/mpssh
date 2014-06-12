@@ -5,7 +5,7 @@ SCPPATH = `which scp`
 CFLAGS = -Wall -DSSHPATH=\"$(SSHPATH)\" -DSCPPATH=\"$(SCPPATH)\"
 LDFLAGS =
 RM = /bin/rm -f
-
+BIN=$(DESTDIR)/usr/bin
 
 LIBS =
 
@@ -25,5 +25,6 @@ clean:
 
 install: all
 	strip $(PROG)
-	install -m 751 -o root $(PROG) /usr/local/bin
+	install -m 775 -d $(BIN)
+	install -m 751 -o root $(PROG) $(BIN)
 
