@@ -15,5 +15,5 @@ Description: Mass Parallel Secure Shell
  mpssh is a parallel ssh tool. What it does is connecting to a number of hosts
  specified in the hosts file and execute the same command on all of them,
  showing a nicely formatted output with each line prepended with the hostname
- that produced the line. It is also possible to specify a script on the local filesystem
- that will be first scp copied to the remote host and then executed.
+ that produced the line. It is also possible to specify a script on the local
+ filesystem that will be first scp copied to the remote host and then executed.
