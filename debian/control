@@ -1,0 +1,19 @@
+Source: mpssh
+Section: admin
+Priority: extra
+Maintainer: Eduardo Ferro Aldama <eferro@alea-soluciones.com>
+Build-Depends: debhelper (>= 8.0.0)
+Standards-Version: 3.9.4
+Homepage: https://github.com/ndenev/mpssh
+#Vcs-Git: git://git.debian.org/collab-maint/mpssh.git
+#Vcs-Browser: http://git.debian.org/?p=collab-maint/mpssh.git;a=summary
+
+Package: mpssh
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Mass Parallel Secure Shell
+ mpssh is a parallel ssh tool. What it does is connecting to a number of hosts
+ specified in the hosts file and execute the same command on all of them,
+ showing a nicely formatted output with each line prepended with the hostname
+ that produced the line. It is also possible to specify a script on the local
+ filesystem that will be first scp copied to the remote host and then executed.
