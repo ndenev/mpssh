@@ -29,7 +29,7 @@
 #include "host.h"
 #include "pslot.h"
 
-const char Ver[] = "1.4-dev";
+const char Ver[] = "1.3.3";
 
 /* global vars */
 struct procslot *ps = NULL;
