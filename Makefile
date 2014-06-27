@@ -5,7 +5,7 @@ SCPPATH = `which scp`
 CFLAGS = -Wall -DSSHPATH=\"$(SSHPATH)\" -DSCPPATH=\"$(SCPPATH)\"
 LDFLAGS =
 RM = /bin/rm -f
-BIN=$(DESTDIR)/usr/bin
+BIN=/usr/local/bin
 
 LIBS =
 
