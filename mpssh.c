@@ -113,13 +113,13 @@ child()
 {
     char *ssh_argv[17];
     int   sap;
+    int   ret;
 
     char *lcmd;
-    int   len_u;
     char *user_arg;
-    /* enough for -p65535\0 */
-    char  port_arg[8];
-    char  tmo_arg[32];
+    char *ssh_port_arg = NULL;
+    char *scp_port_arg = NULL;
+    char *timeout_arg;
 
     ps->pid = 0;
     sap = 0;
@@ -149,18 +149,14 @@ child()
     if (ssh_quiet)
         ssh_argv[sap++] = "-q";
 
-    /* space for -l and \0 */
-    len_u = strlen(ps->hst->user) + 3;
-    user_arg = calloc(1, len_u);
-    if (user_arg == NULL) {
-        exit(1);
-    }
-    snprintf(user_arg, len_u, "-l%s", ps->hst->user);
+    ret = asprintf(&user_arg, "-l%s", ps->hst->user);
+    if (ret == -1) goto fail;
     ssh_argv[sap++] = user_arg;
 
     if (ps->hst->port != NON_DEFINED_PORT) {
-        snprintf(port_arg, sizeof(port_arg), "-p%d", ps->hst->port);
-        ssh_argv[sap++] = port_arg;
+        ret = asprintf(&ssh_port_arg, "-p%d", ps->hst->port);
+        if (ret == -1) goto fail;
+        ssh_argv[sap++] = ssh_port_arg;
     }
 
     if (ssh_hkey_check)
@@ -168,21 +164,26 @@ child()
     else
         ssh_argv[sap++] = "-oStrictHostKeyChecking=no";
 
-    snprintf(tmo_arg,sizeof(tmo_arg), "-oConnectTimeout=%d",
-            ssh_conn_tmout);
-    ssh_argv[sap++] = tmo_arg;
+
+    ret = asprintf(&timeout_arg, "-oConnectTimeout=%d", ssh_conn_tmout);
+    if (ret == -1) goto fail;
+    ssh_argv[sap++] = timeout_arg;
 
 
     if (local_command) {
         ssh_argv[sap++] = "-oPermitLocalCommand=yes";
-        lcmd = calloc(1, 2048);
-        snprintf(lcmd, 2048, "-oLocalCommand=%s -P%d -p %s %s@%s:%s",
+        if (ps->hst->port != NON_DEFINED_PORT) {
+            ret = asprintf(&scp_port_arg, "-P%d", ps->hst->port);
+            if (ret == -1) goto fail;
+        }
+        ret = asprintf(&lcmd, "-oLocalCommand=%s %s -p %s %s@%s:%s",
             SCPPATH,
-            ps->hst->port,
+            scp_port_arg ? scp_port_arg : "",
             script,
             ps->hst->user,
             ps->hst->host,
             base_script);
+        if (ret == -1) goto fail;
         ssh_argv[sap++] = lcmd;
     }
 
@@ -190,8 +191,8 @@ child()
 
     if (local_command) {
         char *remexec;
-        remexec = calloc(1, strlen(base_script)+3);
-        snprintf(remexec, strlen(base_script)+3, "./%s", base_script);
+        ret = asprintf(&remexec, "./%s", base_script);
+        if (ret == -1) goto fail;
         ssh_argv[sap++] = remexec;
     } else {
         ssh_argv[sap++] = cmd;
@@ -203,9 +204,10 @@ child()
     execv("/bin/echo", ssh_argv);
 #else
     execv(SSHPATH, ssh_argv);
+    perr("failed to exec the ssh binary");
 #endif
 
-    perr("failed to exec the ssh binary");
+fail:
     exit(1);
 }
 
@@ -232,6 +234,7 @@ usage(char *msg)
         "  -b, --blind         enable blind mode (no remote output)\n"
         "  -d, --delay         delay between each ssh fork (default %d msec)\n"
         "  -e, --exit          print the remote command return code\n"
+        "                      if specified twice, will print only non zero return codes\n"
         "  -E, --no-err        suppress stderr output\n"
         "  -f, --file=FILE     file with the list of hosts or - for stdin\n"
         "  -h, --help          this screen\n"
@@ -293,7 +296,7 @@ parse_opts(int *argc, char ***argv)
                 if (delay < 0) usage("delay can't be negative");
                 break;
             case 'e':
-                print_exit = 1;
+                print_exit++;
                 break;
             case 'E':
                 no_err = 1;

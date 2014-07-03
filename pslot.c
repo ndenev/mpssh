@@ -277,7 +277,7 @@ pslot_printbuf(struct procslot *pslot, int outfd)
             fflush(stdout);
             return;
         }
-        if (print_exit) {
+        if (print_exit == 1 || (print_exit > 1 && pslot->ret != 0)) {
             /*
              * print exit code prefix "=:", bw if we are not on a tty, 
              * green if return code is zero and red if differs from zero
