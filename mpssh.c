@@ -174,11 +174,13 @@ child()
 
 
     if (local_command) {
+        snprintf(port_arg, sizeof(port_arg), "-P%d", (ps->hst->port
+            != NON_DEFINED_PORT ? ps->hst->port : DEFAULT_PORT));
         ssh_argv[sap++] = "-oPermitLocalCommand=yes";
         lcmd = calloc(1, 2048);
-        snprintf(lcmd, 2048, "-oLocalCommand=%s -P%d -p %s %s@%s:%s",
+        snprintf(lcmd, 2048, "-oLocalCommand=%s %s -p %s %s@%s:%s",
             SCPPATH,
-            ps->hst->port,
+            port_arg,
             script,
             ps->hst->user,
             ps->hst->host,
