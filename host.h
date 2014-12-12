@@ -27,6 +27,7 @@
 
 #define MAXNAME    255 /* max hostname len */
 #define NON_DEFINED_PORT 0
+#define DEFAULT_PORT 22
 
 /* host list structs */
 struct
