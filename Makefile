@@ -26,5 +26,5 @@ clean:
 install: all
 	strip $(PROG)
 	install -m 775 -d $(BIN)
-	install -m 751 -o root $(PROG) $(BIN)
+	install -m 751 $(PROG) $(BIN)
 
