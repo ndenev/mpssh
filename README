@@ -1,6 +1,6 @@
 
 MPSSH - Mass Parallel Secure Shell
-(c) 2005-2013 Nikolay Denev <ndenev@gmail.com>
+(c) 2005-2015 Nikolay Denev <ndenev@gmail.com>
 
 mpssh is a parallel ssh tool. What it does is connecting to a number of hosts
 specified in the hosts file and execute the same command on all of them,
