@@ -3,7 +3,7 @@ Upstream-Name: mpssh
 Source: https://github.com/ndenev/mpssh
 
 Files: *
-Copyright: 2005-2013 Nikolay Denev <ndenev@gmail.com>
+Copyright: 2005-2015 Nikolay Denev <ndenev@gmail.com>
 
 License: BSD-3-clause
  All rights reserved.
