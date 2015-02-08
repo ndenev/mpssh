@@ -209,7 +209,7 @@ pslot_readbuf(struct procslot *pslot, int outfd)
     lua_getglobal(pslot->L, "filter_secrets");
     lua_pushlstring(pslot->L, bufp, strlen(bufp));
     lua_call(pslot->L, 1, 1);
-    lua_string = (char *)lua_tostring(pslot->L, -1);
+    lua_string = (char *)lua_tolstring(pslot->L, -1, lua_string_len);
     /* overwrite! */
     sprintf(bufp, "%s", lua_string);
 #endif
