@@ -42,6 +42,8 @@
 #include <errno.h>
 #include <libgen.h>
 
+#define LUA
+
 #ifndef SSHPATH
 #define SSHPATH    "/usr/bin/ssh"
 #endif

@@ -27,6 +27,11 @@
 
 #define LINEBUF 1024    /* max output line len */
 
+#ifdef LUA
+#include "lua.h"
+#include "lualib.h"
+#include "lauxlib.h"
+#endif
 
 /* stdout/err structure for struct procslot */
 struct
@@ -55,6 +60,9 @@ procslot {
     struct  stdio_pipe io;
     struct  procslot *prev;
     struct  procslot *next;
+#ifdef LUA
+    lua_State *L;
+#endif
 };
 
 /* global process slot var */

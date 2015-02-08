@@ -2,8 +2,8 @@ CC = gcc
 LD = gcc
 SSHPATH = `which ssh`
 SCPPATH = `which scp`
-CFLAGS = -Wall -DSSHPATH=\"$(SSHPATH)\" -DSCPPATH=\"$(SCPPATH)\"
-LDFLAGS =
+CFLAGS = -Wall -DSSHPATH=\"$(SSHPATH)\" -DSCPPATH=\"$(SCPPATH)\" -I/opt/local/include -L/opt/local/lib -llua -lm
+LDFLAGS = -I/opt/local/include -L/opt/local/lib -llua -lm
 RM = /bin/rm -f
 BIN=/usr/local/bin
 
@@ -28,3 +28,5 @@ install: all
 	install -m 775 -d $(BIN)
 	install -m 751 $(PROG) $(BIN)
 
+test: $(PROG)
+	./mpssh -f hosts "uname -a"
