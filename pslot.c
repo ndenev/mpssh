@@ -49,6 +49,13 @@ pslot_new(int pid, struct host *hst)
     pslot_tmp->outf[1].name    = NULL;
     pslot_tmp->outf[1].fh    = NULL;
     pslot_tmp->used = 0;
+
+#ifdef LUA
+    pslot_tmp->L = luaL_newstate();
+    luaL_openlibs(pslot_tmp->L);
+    luaL_dofile(pslot_tmp->L, "mpssh.lua");
+#endif
+
     pipe(pslot_tmp->io.out);
     pipe(pslot_tmp->io.err);
     fcntl(pslot_tmp->io.out[0], F_SETFL, O_NONBLOCK);
@@ -125,6 +132,10 @@ pslot_del(struct procslot *pslot)
         free(pslot_todel->outf[1].name);
     }
 
+#ifdef LUA
+    lua_close(pslot_todel->L);
+#endif
+
     free(pslot_todel);
 
     if (is_last) {
@@ -162,6 +173,10 @@ pslot_readbuf(struct procslot *pslot, int outfd)
     int   fd;
     char  buf;
     char *bufp;
+#ifdef LUA
+    size_t *lua_string_len = NULL;
+    char *lua_string;
+#endif
 
     switch (outfd) {
         case OUT:
@@ -183,11 +198,22 @@ pslot_readbuf(struct procslot *pslot, int outfd)
             if (errno == EINTR) continue;
             return 0;
         }
-        if (buf == '\n') return 1;
+        if (buf == '\n')
+            break;
         strncat(bufp, &buf, 1);
-        if (strlen(bufp) >= (LINEBUF-1)) return 1;
+        if (strlen(bufp) >= (LINEBUF-1))
+            break;
     }
-
+#ifdef LUA
+    /* line string is received, post process it */
+    lua_getglobal(pslot->L, "filter_secrets");
+    lua_pushlstring(pslot->L, bufp, strlen(bufp));
+    lua_call(pslot->L, 1, 1);
+    lua_string = (char *)lua_tostring(pslot->L, -1);
+    /* overwrite! */
+    sprintf(bufp, "%s", lua_string);
+#endif
+    return 1;
 }
 
 void
