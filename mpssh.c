@@ -178,8 +178,9 @@ child()
             != NON_DEFINED_PORT ? ps->hst->port : DEFAULT_PORT));
         ssh_argv[sap++] = "-oPermitLocalCommand=yes";
         lcmd = calloc(1, 2048);
-        snprintf(lcmd, 2048, "-oLocalCommand=%s %s -p %s %s@%s:%s",
+        snprintf(lcmd, 2048, "-oLocalCommand=%s %s %s -p %s %s@%s:%s",
             SCPPATH,
+            (ssh_quiet) ? "-q" : "",
             port_arg,
             script,
             ps->hst->user,
