@@ -41,6 +41,7 @@ char *outdir      = NULL;
 char *label       = NULL;
 char *script      = NULL;
 char *base_script = NULL;
+char *ident_file  = NULL;
 
 int children       = 0;
 int maxchld        = 0;
@@ -111,7 +112,7 @@ reap_child()
 void
 child()
 {
-    char *ssh_argv[17];
+    char *ssh_argv[19];
     int   sap;
 
     char *lcmd;
@@ -188,6 +189,11 @@ child()
         ssh_argv[sap++] = lcmd;
     }
 
+    if (ident_file) {
+      ssh_argv[sap++] = "-i";
+      ssh_argv[sap++] = ident_file;
+    }
+
     ssh_argv[sap++] = ps->hst->host;
 
     if (local_command) {
@@ -238,6 +244,7 @@ usage(char *msg)
         "  -f, --file=FILE     file with the list of hosts or - for stdin\n"
         "  -h, --help          this screen\n"
         "  -l, --label=LABEL   connect only to hosts under label LABEL\n"
+        "  -i, --identity=FILE use the private key in FILE to connect to hosts\n"
         "  -o, --outdir=DIR    save the remote output in this directory\n"
         "  -O, --no-out        suppress stdout output\n"
         "  -p, --procs=NPROC   number of parallel ssh processes (default %d)\n"
@@ -267,6 +274,7 @@ parse_opts(int *argc, char ***argv)
         { "exit",      no_argument,        NULL,        'e' },
         { "file",      required_argument,  NULL,        'f' },
         { "help",      no_argument,        NULL,        'h' },
+        { "identity",  required_argument,  NULL,        'i' },
         { "label",     required_argument,  NULL,        'l' },
         { "outdir",    required_argument,  NULL,        'o' },
         { "procs",     required_argument,  NULL,        'p' },
@@ -283,7 +291,7 @@ parse_opts(int *argc, char ***argv)
     };
 
     while ((opt = getopt_long(*argc, *argv,
-                "bd:eEf:hl:o:Op:qr:u:t:svV", longopts, NULL)) != -1) {
+                "bd:eEf:hi:l:o:Op:qr:u:t:svV", longopts, NULL)) != -1) {
         switch (opt) {
             case 'b':
                 blind = 1;
@@ -307,6 +315,9 @@ parse_opts(int *argc, char ***argv)
                 break;
             case 'h':
                 usage(NULL);
+                break;
+            case 'i':
+                ident_file = optarg;
                 break;
             case 'l':
                 label = optarg;
