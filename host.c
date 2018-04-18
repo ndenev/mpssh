@@ -156,6 +156,7 @@ host_readlist(char *fname)
 {
     FILE   *hstlist;
     struct  host *hst;
+    struct  host *hst_it;
     struct  host *hst_head;
     char    line[MAXNAME*3];
     int     i;
@@ -237,6 +238,23 @@ host_readlist(char *fname)
             if (strcmp(llabel, label))
                 continue;
         }
+
+        /* check for duplicate host */
+        hst_it = hst_head;
+        do
+        {
+            if ((hst_it->host != NULL && !strcmp(hst_it->host, hostname))
+                    && (hst_it->user != NULL && !strcmp(hst_it->user, login))
+                    && (hst_it->port == (uint16_t)port))
+            {
+                break;
+            }
+        }
+        while ((hst_it = hst_it->next));
+
+        /* throw out duplicate host */
+        if (hst_it)
+            continue;
 
         /* add the host record */
         hst = host_add(hst, login, hostname, (uint16_t)port);
